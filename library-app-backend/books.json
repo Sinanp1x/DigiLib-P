@@ -1,0 +1,29 @@
+[
+  {
+    "title": "The Hitchhiker's Guide to the Galaxy",
+    "author": "Douglas Adams",
+    "description": "A hilarious sci-fi adventure about the last surviving man from Earth.",
+    "image_filename": "hitchhikers_guide.jpg",
+    "genre": "Science Fiction",
+    "language": "English",
+    "barcode": "11111"
+  },
+  {
+    "title": "To Kill a Mockingbird",
+    "author": "Harper Lee",
+    "description": "A classic novel about justice and racial inequality in the American South.",
+    "image_filename": "mockingbird.jpg",
+    "genre": "Classic",
+    "language": "English",
+    "barcode": "22222"
+  },
+  {
+    "title": "1984",
+    "author": "George Orwell",
+    "description": "A dystopian novel about a totalitarian society under constant surveillance.",
+    "image_filename": "1984.jpg",
+    "genre": "Dystopian",
+    "language": "English",
+    "barcode": "33333"
+  }
+]

@@ -1,0 +1,13 @@
+# Python
+venv/
+__pycache__/
+
+# Node.js
+node_modules/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Other common ignore files
+.env
