@@ -6,13 +6,17 @@ module.exports = {
   ],
   theme: {
     extend: {
-      colors: {
-        'primary-blue': '#4F46E5', // A medium indigo blue
-        'secondary-blue': '#6366F1', // A lighter indigo
-        'bg-light': '#F9FAFB', // Very light gray background
-        'text-dark': '#1F2937', // Dark gray text
-        'border-light': '#D1D5DB', // Light gray border
-      },
+        colors: {
+          'primary-brand': '#4338CA', // Darker indigo for brand elements
+          'secondary-brand': '#6366F1', // A softer indigo
+          'bg-light': '#F9FAFB', // Very light gray background
+          'text-dark': '#1F2937', // Dark gray text
+          'text-medium': '#4B5563', // Medium gray for secondary text
+          'border-light': '#E5E7EB', // Lighter border color
+        },
+        fontFamily: {
+          'sans': ['Inter', 'sans-serif'], // Use Inter for a modern look
+        },
     },
   },
   plugins: [],
