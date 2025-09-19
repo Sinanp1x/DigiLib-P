@@ -16,7 +16,7 @@ function Signup() {
     setLoading(true);
 
     try {
-      const response = await fetch('/signup', {
+      const response = await fetch('https://stunning-rotary-phone-6wjgv944q95crqvw-5000.app.github.dev/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

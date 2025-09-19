@@ -28,7 +28,7 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 # --- Initialize Extensions ---
 db.init_app(app)
 bcrypt = Bcrypt(app)
-CORS(app) # Allows your React app to talk to this server
+CORS(app, resources={r"/*": {"origins": "*"}}) # Allows your React app to talk to this server
 
 # --- JWT Helper Functions & Decorators ---
 def token_required(f):
