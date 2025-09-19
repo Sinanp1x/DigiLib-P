@@ -112,45 +112,47 @@ export default function Catalogue() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto mt-12 p-8 bg-white rounded-2xl shadow-2xl border border-blue-100">
-      <h2 className="text-2xl font-bold mb-6 text-blue-700">Manage Catalogue</h2>
-      <form onSubmit={handleSubmit} className="space-y-4 mb-8">
-        <input type="text" name="title" placeholder="Book Title*" value={form.title} onChange={handleChange} className="w-full px-4 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
-        <input type="text" name="genre" list="genre-list" placeholder="Genre*" value={form.genre} onChange={handleGenreChange} className="w-full px-4 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
-        <datalist id="genre-list">
-          {genres.map((g) => <option key={g} value={g} />)}
-        </datalist>
-        <input type="text" name="author" placeholder="Author*" value={form.author} onChange={handleChange} className="w-full px-4 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
-        <input type="number" name="copies" min="1" placeholder="Number of Copies*" value={form.copies} onChange={handleChange} className="w-full px-4 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
-        <input type="text" name="series" placeholder="Series Name (optional)" value={form.series} onChange={handleChange} className="w-full px-4 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
-        <input type="number" name="volume" min="1" placeholder="Volume Number (optional)" value={form.volume} onChange={handleChange} className="w-full px-4 py-2 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
-        <div {...getRootProps()} className={`w-full px-4 py-6 border-2 border-dashed rounded-lg text-center cursor-pointer ${isDragActive ? 'border-blue-400 bg-blue-50' : 'border-blue-200 bg-blue-100'}`}>
-          <input {...getInputProps()} />
-          {form.image ? (
-            <span className="text-blue-700 font-semibold">{form.image.name}</span>
-          ) : (
-            <span className="text-gray-600">Drag & drop book cover image here, or click to select</span>
-          )}
-        </div>
-        {error && <div className="text-red-600 text-sm font-semibold">{error}</div>}
-        <button type="submit" disabled={uploading} className="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white py-2 rounded-lg font-bold hover:from-blue-700 hover:to-blue-500 transition shadow">{uploading ? 'Uploading...' : 'Add Book'}</button>
-      </form>
-      <div className="mb-8 text-right">
-        <button onClick={handleDownloadPDF} className="bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition shadow">Download Catalogue PDF</button>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {books.map((book) => (
-          <div key={book.id} className="bg-blue-50 rounded-xl shadow p-6 flex flex-col items-center">
-            {book.imagePath && (
-              <img src={`http://localhost:5000${book.imagePath}`} alt={book.title} className="w-24 h-32 object-cover rounded mb-4 border border-blue-200" />
+    <div className="min-h-screen bg-bg-light py-12">
+      <div className="max-w-4xl mx-auto p-8 bg-white rounded-2xl shadow-2xl border border-border-light">
+        <h2 className="text-2xl font-bold mb-6 text-primary-blue">Manage Catalogue</h2>
+        <form onSubmit={handleSubmit} className="space-y-4 mb-8">
+          <input type="text" name="title" placeholder="Book Title*" value={form.title} onChange={handleChange} className="w-full px-4 py-2 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue transition text-text-dark bg-bg-light" />
+          <input type="text" name="genre" list="genre-list" placeholder="Genre*" value={form.genre} onChange={handleGenreChange} className="w-full px-4 py-2 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue transition text-text-dark bg-bg-light" />
+          <datalist id="genre-list">
+            {genres.map((g) => <option key={g} value={g} />)}
+          </datalist>
+          <input type="text" name="author" placeholder="Author*" value={form.author} onChange={handleChange} className="w-full px-4 py-2 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue transition text-text-dark bg-bg-light" />
+          <input type="number" name="copies" min="1" placeholder="Number of Copies*" value={form.copies} onChange={handleChange} className="w-full px-4 py-2 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue transition text-text-dark bg-bg-light" />
+          <input type="text" name="series" placeholder="Series Name (optional)" value={form.series} onChange={handleChange} className="w-full px-4 py-2 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue transition text-text-dark bg-bg-light" />
+          <input type="number" name="volume" min="1" placeholder="Volume Number (optional)" value={form.volume} onChange={handleChange} className="w-full px-4 py-2 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue transition text-text-dark bg-bg-light" />
+          <div {...getRootProps()} className={`w-full px-4 py-6 border-2 border-dashed rounded-lg text-center cursor-pointer ${isDragActive ? 'border-primary-blue bg-bg-light' : 'border-border-light bg-bg-light'}`}>
+            <input {...getInputProps()} />
+            {form.image ? (
+              <span className="text-primary-blue font-semibold">{form.image.name}</span>
+            ) : (
+              <span className="text-gray-600">Drag & drop book cover image here, or click to select</span>
             )}
-            <div className="font-bold text-lg text-blue-700 mb-2">{book.title}</div>
-            <div className="text-sm text-gray-700">Author: {book.author}</div>
-            <div className="text-sm text-gray-700">Genre: {book.genre}</div>
-            <div className="text-sm text-gray-700">Copies: {book.copies}</div>
-            <div className="text-xs text-gray-500 mt-2">ID: {book.id}</div>
           </div>
-        ))}
+          {error && <div className="text-red-600 text-sm font-semibold">{error}</div>}
+          <button type="submit" disabled={uploading} className="w-full bg-primary-blue text-white py-2 rounded-lg font-bold hover:bg-secondary-blue transition-colors disabled:bg-primary-blue/70 shadow">{uploading ? 'Uploading...' : 'Add Book'}</button>
+        </form>
+        <div className="mb-8 text-right">
+          <button onClick={handleDownloadPDF} className="bg-primary-blue text-white px-6 py-2 rounded-lg font-bold hover:bg-secondary-blue transition-colors shadow">Download Catalogue PDF</button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {books.map((book) => (
+            <div key={book.id} className="bg-bg-light rounded-xl shadow p-6 flex flex-col items-center border border-border-light">
+              {book.imagePath && (
+                <img src={`http://localhost:5000${book.imagePath}`} alt={book.title} className="w-24 h-32 object-cover rounded mb-4 border border-border-light" />
+              )}
+              <div className="font-bold text-lg text-primary-blue mb-2">{book.title}</div>
+              <div className="text-sm text-text-dark">Author: {book.author}</div>
+              <div className="text-sm text-text-dark">Genre: {book.genre}</div>
+              <div className="text-sm text-text-dark">Copies: {book.copies}</div>
+              <div className="text-xs text-gray-500 mt-2">ID: {book.id}</div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

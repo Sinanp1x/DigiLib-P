@@ -21,16 +21,16 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="mt-16">
-      <h2 className="text-4xl font-extrabold mb-10 text-center text-blue-700 drop-shadow">Admin Dashboard</h2>
+    <div className="min-h-screen bg-bg-light py-16">
+      <h2 className="text-4xl font-extrabold mb-10 text-center text-primary-blue drop-shadow">Admin Dashboard</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 justify-center px-4">
         {cards.map((card) => (
           <div
             key={card.title}
-            className="bg-white rounded-2xl shadow-xl p-10 flex items-center justify-center cursor-pointer hover:bg-blue-100 hover:scale-105 transition-transform duration-200 border border-blue-100"
+            className="bg-white rounded-2xl shadow-xl p-10 flex items-center justify-center cursor-pointer hover:bg-bg-light hover:scale-105 transition-transform duration-200 border border-border-light"
             onClick={() => handleCardClick(card)}
           >
-            <span className="text-xl font-bold text-blue-700 tracking-wide">{card.title}</span>
+            <span className="text-xl font-bold text-primary-blue tracking-wide">{card.title}</span>
           </div>
         ))}
       </div>

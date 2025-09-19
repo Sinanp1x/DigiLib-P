@@ -38,18 +38,20 @@ export default function Signup() {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-16 p-10 bg-white rounded-2xl shadow-2xl border border-blue-100">
-      <h2 className="text-3xl font-extrabold mb-8 text-center text-blue-700 drop-shadow">Institution Signup</h2>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <input type="text" name="institutionName" placeholder="Institution Name" value={form.institutionName} onChange={handleChange} className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
-        <input type="text" name="adminName" placeholder="Admin Name" value={form.adminName} onChange={handleChange} className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
-        <input type="email" name="adminEmail" placeholder="Admin Email" value={form.adminEmail} onChange={handleChange} className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
-        <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition" />
-        {error && <div className="text-red-600 text-sm font-semibold">{error}</div>}
-        <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 rounded-lg font-bold hover:from-blue-700 hover:to-blue-500 transition shadow">Signup</button>
+    <div className="min-h-screen bg-bg-light flex items-center justify-center">
+      <div className="max-w-md w-full p-10 bg-white rounded-2xl shadow-2xl border border-border-light">
+        <h2 className="text-3xl font-extrabold mb-8 text-center text-primary-blue drop-shadow">Institution Signup</h2>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <input type="text" name="institutionName" placeholder="Institution Name" value={form.institutionName} onChange={handleChange} className="w-full px-4 py-3 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue transition text-text-dark bg-bg-light" />
+          <input type="text" name="adminName" placeholder="Admin Name" value={form.adminName} onChange={handleChange} className="w-full px-4 py-3 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue transition text-text-dark bg-bg-light" />
+          <input type="email" name="adminEmail" placeholder="Admin Email" value={form.adminEmail} onChange={handleChange} className="w-full px-4 py-3 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue transition text-text-dark bg-bg-light" />
+          <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} className="w-full px-4 py-3 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue transition text-text-dark bg-bg-light" />
+          {error && <div className="text-red-600 text-sm font-semibold">{error}</div>}
+          <button type="submit" className="w-full bg-primary-blue text-white py-3 rounded-lg font-bold hover:bg-secondary-blue transition-colors disabled:bg-primary-blue/70 shadow">Signup</button>
       </form>
-      <div className="mt-6 text-center">
-        <Link to="/login" className="text-blue-600 hover:underline font-medium">Login instead</Link>
+        <div className="mt-6 text-center">
+          <Link to="/login" className="text-primary-blue hover:underline font-medium">Login instead</Link>
+        </div>
       </div>
     </div>
   );
