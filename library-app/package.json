@@ -4,6 +4,7 @@
   "description": "A library management application built with React",
   "author": "P1.x",
   "private": true,
+  "proxy": "http://localhost:5000",
   "dependencies": {
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
