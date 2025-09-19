@@ -1,0 +1,8 @@
+- [x] Project folders created: frontend, backend, backend/public/book_covers
+- [ ] Scaffold React frontend in frontend/
+- [ ] Scaffold Express backend in backend/
+- [ ] Implement authentication flow
+- [ ] Implement dashboard and components
+- [ ] Implement backend image upload endpoint
+- [ ] Integrate PDF generation
+- [ ] Ensure documentation is complete
