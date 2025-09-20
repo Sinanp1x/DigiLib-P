@@ -4,6 +4,9 @@ import { useAuth } from '../AuthContext';
 const cards = [
   { title: 'Manage Students', path: '/dashboard/students' },
   { title: 'Manage Catalogue', path: '/dashboard/catalogue' },
+  { title: 'Check Out Book', path: '/dashboard/checkout' },
+  { title: 'Active Transactions', path: '/dashboard/transactions' },
+  { title: 'Transaction History', path: '/dashboard/history' },
   { title: 'Logout', path: '/login' },
 ];
 

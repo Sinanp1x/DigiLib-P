@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 body {
+	/* This ensures the entire page uses the new font */
 	font-family: 'Inter', sans-serif;
 	background-color: #F9FAFB;
 }

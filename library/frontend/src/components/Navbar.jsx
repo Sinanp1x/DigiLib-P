@@ -13,6 +13,9 @@ export default function Navbar() {
         <Link to="/dashboard" className="text-text-dark hover:text-primary-blue transition">Dashboard</Link>
         <Link to="/dashboard/students" className="text-text-dark hover:text-primary-blue transition">Students</Link>
         <Link to="/dashboard/catalogue" className="text-text-dark hover:text-primary-blue transition">Catalogue</Link>
+        <Link to="/dashboard/checkout" className="text-text-dark hover:text-primary-blue transition">Checkout</Link>
+        <Link to="/dashboard/transactions" className="text-text-dark hover:text-primary-blue transition">Transactions</Link>
+        <Link to="/dashboard/history" className="text-text-dark hover:text-primary-blue transition">History</Link>
         <Link to="/login" className="text-text-dark hover:text-primary-blue transition">Logout</Link>
       </div>
     </nav>
