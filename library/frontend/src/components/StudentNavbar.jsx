@@ -12,6 +12,7 @@ export default function StudentNavbar() {
   const navItems = [
     { path: '/student-dashboard', label: 'Dashboard' },
     { path: '/student-dashboard/catalogue', label: 'Browse Books' },
+    { path: '/student-dashboard/profile', label: 'Profile' },
     { path: '/student-dashboard/my-books', label: 'My Books' },
     { path: '/student-dashboard/requests', label: 'Book Requests' },
     { path: '/student-dashboard/fines', label: 'My Fines' },

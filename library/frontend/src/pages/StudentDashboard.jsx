@@ -5,6 +5,7 @@ import StudentMyBooks from './StudentMyBooks';
 import StudentRequests from './StudentRequests';
 import StudentFines from './StudentFines';
 import Community from './Community';
+import StudentProfile from './StudentProfile';
 
 function StudentDashboardHome() {
   return (
@@ -44,6 +45,7 @@ export default function StudentDashboard() {
       <Routes>
         <Route index element={<StudentDashboardHome />} />
         <Route path="/catalogue" element={<StudentCatalogue />} />
+  <Route path="/profile" element={<StudentProfile />} />
         <Route path="/my-books" element={<StudentMyBooks />} />
         <Route path="/requests" element={<StudentRequests />} />
         <Route path="/fines" element={<StudentFines />} />

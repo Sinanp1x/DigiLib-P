@@ -4,7 +4,8 @@
   "description": "Express backend for Digi-Lib MVP",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "jest --runInBand"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -13,5 +14,10 @@
     "multer": "^2.0.2",
     "node-barcode": "^1.0.0",
     "sharp": "^0.34.4"
+  }
+  ,
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "supertest": "^6.0.0"
   }
 }

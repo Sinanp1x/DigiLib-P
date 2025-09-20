@@ -13,6 +13,8 @@ export default function Navbar() {
         <Link to="/dashboard" className="text-text-dark hover:text-primary-blue transition">Dashboard</Link>
         <Link to="/dashboard/students" className="text-text-dark hover:text-primary-blue transition">Students</Link>
         <Link to="/dashboard/catalogue" className="text-text-dark hover:text-primary-blue transition">Catalogue</Link>
+  <Link to="/dashboard/scan" className="text-text-dark hover:text-primary-blue transition">Scan</Link>
+  <Link to="/dashboard/profile" className="text-text-dark hover:text-primary-blue transition">Profile</Link>
         <Link to="/dashboard/checkout" className="text-text-dark hover:text-primary-blue transition">Checkout</Link>
         <Link to="/dashboard/transactions" className="text-text-dark hover:text-primary-blue transition">Transactions</Link>
         <Link to="/dashboard/requests" className="text-text-dark hover:text-primary-blue transition">Requests</Link>

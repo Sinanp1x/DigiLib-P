@@ -3,8 +3,26 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
-const JsBarcode = require('jsbarcode');
-const { createCanvas } = require('canvas');
+let JsBarcode;
+let createCanvas;
+try {
+  JsBarcode = require('jsbarcode');
+} catch (e) {
+  console.warn('jsbarcode not available, using noop');
+  JsBarcode = () => {};
+}
+try {
+  const canvasModule = require('canvas');
+  createCanvas = canvasModule.createCanvas;
+} catch (e) {
+  console.warn('canvas not available, using fallback canvas');
+  createCanvas = function () {
+    return {
+      toBuffer: () => Buffer.from(''),
+      getContext: () => ({})
+    };
+  };
+}
 const sharp = require('sharp');
 
 const app = express();
@@ -78,7 +96,7 @@ app.post('/api/generate-barcode', async (req, res) => {
 });
 
 // Generic file upload endpoint (type is optional for backward compatibility)
-app.post('/api/upload/:type?', upload.single('file'), async (req, res) => {
+const uploadHandler = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
@@ -114,9 +132,68 @@ app.post('/api/upload/:type?', upload.single('file'), async (req, res) => {
     console.error('Error processing upload:', error);
     res.status(500).json({ error: 'Failed to process upload' });
   }
-});
+};
+
+app.post('/api/upload', upload.single('file'), uploadHandler);
+app.post('/api/upload/:type', upload.single('file'), uploadHandler);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+module.exports = app;
+
+// --- Simple user profile endpoints (file-backed storage under public/profiles)
+app.post('/api/profile', upload.single('file'), async (req, res) => {
+  try {
+    const { id, name, role } = req.body;
+    if (!id) return res.status(400).json({ error: 'id is required' });
+
+    // ensure profiles dir exists
+    const dir = path.join(__dirname, 'public', 'profiles');
+    await fs.mkdir(dir, { recursive: true });
+
+    let avatarPath = null;
+    if (req.file) {
+      // process and save as predictable filename: <id>.jpg
+      const processedFilePath = path.join(path.dirname(req.file.path), 'processed_' + path.basename(req.file.path));
+      await sharp(req.file.path)
+        .resize(400, 400, { fit: 'cover' })
+        .jpeg({ quality: 85 })
+        .toFile(processedFilePath);
+
+      const destFilename = `${id}.jpg`;
+      const dest = path.join(dir, destFilename);
+      await fs.copyFile(processedFilePath, dest);
+      avatarPath = `/public/profiles/${destFilename}`;
+
+      // cleanup the uploaded and processed temp files
+      try { await fs.unlink(req.file.path); } catch (e) {}
+      try { await fs.unlink(processedFilePath); } catch (e) {}
+    }
+
+    // Simple JSON storage per profile
+    const meta = { id, name: name || '', role: role || '', avatar: avatarPath };
+    const metaPath = path.join(dir, `${id}.json`);
+    await fs.writeFile(metaPath, JSON.stringify(meta, null, 2));
+
+    res.json({ profile: meta });
+  } catch (err) {
+    console.error('Profile save error', err);
+    res.status(500).json({ error: 'Failed to save profile' });
+  }
+});
+
+app.get('/api/profile/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const metaPath = path.join(__dirname, 'public', 'profiles', `${id}.json`);
+    const data = await fs.readFile(metaPath, 'utf8');
+    res.json(JSON.parse(data));
+  } catch (err) {
+    res.status(404).json({ error: 'Profile not found' });
+  }
 });
