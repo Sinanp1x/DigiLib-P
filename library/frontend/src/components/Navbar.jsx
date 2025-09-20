@@ -15,6 +15,7 @@ export default function Navbar() {
         <Link to="/dashboard/catalogue" className="text-text-dark hover:text-primary-blue transition">Catalogue</Link>
         <Link to="/dashboard/checkout" className="text-text-dark hover:text-primary-blue transition">Checkout</Link>
         <Link to="/dashboard/transactions" className="text-text-dark hover:text-primary-blue transition">Transactions</Link>
+        <Link to="/dashboard/requests" className="text-text-dark hover:text-primary-blue transition">Requests</Link>
         <Link to="/dashboard/history" className="text-text-dark hover:text-primary-blue transition">History</Link>
         <Link to="/login" className="text-text-dark hover:text-primary-blue transition">Logout</Link>
       </div>

@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { hashPassword } from '../utils/auth';
+import { toast } from 'react-hot-toast';
 
 function generateStudentId(name) {
   const prefix = name.slice(0, 3).toUpperCase();
@@ -6,11 +8,18 @@ function generateStudentId(name) {
   return `STU-${prefix}-${rand}`;
 }
 
+function generateDefaultPassword() {
+  return Math.random().toString(36).slice(-8);
+}
+
 export default function Students() {
-  const [portalEnabled, setPortalEnabled] = useState(false);
+  const [portalEnabled, setPortalEnabled] = useState(() => {
+    const institution = JSON.parse(localStorage.getItem('institution'));
+    return institution?.portalEnabled || false;
+  });
   const [form, setForm] = useState({ name: '', grade: '', section: '' });
   const [students, setStudents] = useState(() => {
-    const institution = JSON.parse(localStorage.getItem('digilib_institution'));
+    const institution = JSON.parse(localStorage.getItem('institution'));
     return institution?.students || [];
   });
 
@@ -18,17 +27,47 @@ export default function Students() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  useEffect(() => {
+    const institution = JSON.parse(localStorage.getItem('institution'));
+    if (institution) {
+      institution.portalEnabled = portalEnabled;
+      localStorage.setItem('institution', JSON.stringify(institution));
+    }
+  }, [portalEnabled]);
+
   const handleRegister = (e) => {
     e.preventDefault();
-    if (!form.name || !form.grade || !form.section) return;
-    const id = generateStudentId(form.name);
-    const newStudent = { ...form, id };
+    if (!form.name || !form.grade || !form.section) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    const uniqueStudentId = generateStudentId(form.name);
+    const defaultPassword = generateDefaultPassword();
+    const hashedPassword = hashPassword(defaultPassword);
+
+    const newStudent = {
+      ...form,
+      uniqueStudentId,
+      password: hashedPassword,
+    };
+
     const updatedStudents = [...students, newStudent];
     setStudents(updatedStudents);
-    const institution = JSON.parse(localStorage.getItem('digilib_institution'));
-    institution.students = updatedStudents;
-    localStorage.setItem('digilib_institution', JSON.stringify(institution));
+
+    const institution = JSON.parse(localStorage.getItem('institution'));
+    const updatedInstitution = {
+      ...institution,
+      students: updatedStudents,
+      portalEnabled,
+      bookingRequests: institution.bookingRequests || [],
+      fines: institution.fines || []
+    };
+
+    localStorage.setItem('institution', JSON.stringify(updatedInstitution));
     setForm({ name: '', grade: '', section: '' });
+
+    toast.success(`Student registered successfully! Default password: ${defaultPassword}`);
   };
 
   return (
@@ -59,12 +98,16 @@ export default function Students() {
         )}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {students.map((student) => (
-            <div key={student.id} className="bg-bg-light rounded-xl shadow p-6 flex flex-col items-center border border-border-light">
+            <div key={student.uniqueStudentId} className="bg-bg-light rounded-xl shadow p-6 flex flex-col items-center border border-border-light">
               <div className="font-bold text-lg text-primary-blue mb-2">{student.name}</div>
               <div className="text-sm text-text-dark">Grade: {student.grade}</div>
               <div className="text-sm text-text-dark">Section: {student.section}</div>
-              <div className="text-xs text-gray-500 mt-2">ID: {student.id}</div>
-              {/* Edit/Delete buttons for future */}
+              <div className="text-xs text-gray-500 mt-2">ID: {student.uniqueStudentId}</div>
+              {portalEnabled && (
+                <div className="mt-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                  Portal Access Enabled
+                </div>
+              )}
             </div>
           ))}
         </div>

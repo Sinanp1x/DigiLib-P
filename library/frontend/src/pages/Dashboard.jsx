@@ -6,7 +6,9 @@ const cards = [
   { title: 'Manage Catalogue', path: '/dashboard/catalogue' },
   { title: 'Check Out Book', path: '/dashboard/checkout' },
   { title: 'Active Transactions', path: '/dashboard/transactions' },
+  { title: 'Book Requests', path: '/dashboard/requests' },
   { title: 'Transaction History', path: '/dashboard/history' },
+  { title: 'Community Reviews', path: '/dashboard/community' },
   { title: 'Logout', path: '/login' },
 ];
 

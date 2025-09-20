@@ -9,6 +9,9 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^5.1.0",
-    "multer": "^2.0.2"
+    "jsbarcode": "^3.12.1",
+    "multer": "^2.0.2",
+    "node-barcode": "^1.0.0",
+    "sharp": "^0.34.4"
   }
 }

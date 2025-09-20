@@ -54,6 +54,19 @@ export default function Catalogue() {
     }
   };
 
+  const generateBarcode = async (bookId) => {
+    try {
+      const res = await axios.post('/api/generate-barcode', 
+        { bookId }, 
+        { baseURL: 'http://localhost:5000' }
+      );
+      return res.data.barcodePath;
+    } catch (err) {
+      console.error('Failed to generate barcode:', err);
+      return null;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.title || !form.genre || !form.author || !form.copies || !form.image) {
@@ -63,6 +76,15 @@ export default function Catalogue() {
     setError('');
     setUploading(true);
     const bookId = generateBookId(form.genre, form.author);
+
+    // Generate barcode
+    const barcodePath = await generateBarcode(bookId);
+    if (!barcodePath) {
+      setError('Failed to generate barcode.');
+      setUploading(false);
+      return;
+    }
+
     // Upload image to backend
     const data = new FormData();
     data.append('file', form.image);
@@ -76,6 +98,7 @@ export default function Catalogue() {
       setUploading(false);
       return;
     }
+
     // Create book object
     const newBook = {
       id: bookId,
@@ -86,12 +109,13 @@ export default function Catalogue() {
       series: form.series,
       volume: form.volume,
       imagePath,
+      barcodePath,
     };
     const updatedBooks = [...books, newBook];
     setBooks(updatedBooks);
-    const institution = JSON.parse(localStorage.getItem('digilib_institution'));
-    institution.books = updatedBooks;
-    localStorage.setItem('digilib_institution', JSON.stringify(institution));
+  const existing = JSON.parse(localStorage.getItem('digilib_institution')) || { books: [] };
+  existing.books = updatedBooks;
+  localStorage.setItem('digilib_institution', JSON.stringify(existing));
     setForm({ title: '', genre: '', author: '', copies: 1, series: '', volume: '', image: null });
     setUploading(false);
   };
@@ -150,6 +174,16 @@ export default function Catalogue() {
               <div className="text-sm text-text-dark">Genre: {book.genre}</div>
               <div className="text-sm text-text-dark">Copies: {book.copies}</div>
               <div className="text-xs text-gray-500 mt-2">ID: {book.id}</div>
+              {book.barcodePath && (
+                <a 
+                  href={`http://localhost:5000${book.barcodePath}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="mt-4 px-4 py-2 bg-primary-blue text-white text-sm rounded hover:bg-secondary-blue transition-colors"
+                >
+                  View Barcode
+                </a>
+              )}
             </div>
           ))}
         </div>
