@@ -1,44 +1,58 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-
-const cards = [
-  { title: 'Manage Students', path: '/dashboard/students' },
-  { title: 'Manage Catalogue', path: '/dashboard/catalogue' },
-  { title: 'Check Out Book', path: '/dashboard/checkout' },
-  { title: 'Active Transactions', path: '/dashboard/transactions' },
-  { title: 'Book Requests', path: '/dashboard/requests' },
-  { title: 'Transaction History', path: '/dashboard/history' },
-  { title: 'Community Reviews', path: '/dashboard/community' },
-  { title: 'Logout', path: '/login' },
-];
+import { Box, Typography, Grid, Card, CardActionArea, CardContent } from '@mui/material';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const institution = JSON.parse(localStorage.getItem('digilib_institution')) || {};
+  const portalEnabled = !!institution.portalEnabled;
+  const cards = [
+    { title: 'Manage Students', path: '/admin/dashboard/students' },
+    { title: 'Manage Catalogue', path: '/admin/dashboard/catalogue' },
+    { title: 'Check Out Book', path: '/admin/dashboard/checkout' },
+    { title: 'Active Transactions', path: '/admin/dashboard/transactions' },
+    { title: 'Transaction History', path: '/admin/dashboard/history' },
+    ...(portalEnabled ? [
+      { title: 'Book Requests', path: '/admin/dashboard/requests' },
+      { title: 'Community Reviews', path: '/admin/dashboard/community' },
+    ] : []),
+  ];
 
-  const handleCardClick = (card) => {
-    if (card.title === 'Logout') {
-      logout();
-      navigate('/login');
-    } else {
-      navigate(card.path);
-    }
-  };
+  const handleCardClick = (card) => navigate(card.path);
 
   return (
-    <div className="min-h-screen bg-bg-light py-16">
-      <h2 className="text-4xl font-extrabold mb-10 text-center text-primary-blue drop-shadow">Admin Dashboard</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 justify-center px-4">
+    <Box sx={{
+      minHeight: '100vh',
+      bgcolor: 'background.default',
+      py: 8,
+    }}>
+      <Typography variant="h3" color="primary" fontWeight={800} textAlign="center" gutterBottom sx={{ mb: 6, letterSpacing: '0.02em' }}>
+        Admin Dashboard
+      </Typography>
+      <Grid container spacing={4} justifyContent="center" sx={{ maxWidth: '1100px', mx: 'auto' }}>
         {cards.map((card) => (
-          <div
-            key={card.title}
-            className="bg-white rounded-2xl shadow-xl p-10 flex items-center justify-center cursor-pointer hover:bg-bg-light hover:scale-105 transition-transform duration-200 border border-border-light"
-            onClick={() => handleCardClick(card)}
-          >
-            <span className="text-xl font-bold text-primary-blue tracking-wide">{card.title}</span>
-          </div>
+          <Grid item key={card.title} xs={12} sm={6} md={4} lg={3}>
+            <Card sx={{
+              borderRadius: 4,
+              boxShadow: '0 4px 24px rgba(25, 118, 210, 0.10)',
+              transition: 'transform 0.2s, box-shadow 0.2s',
+              '&:hover': {
+                transform: 'scale(1.04)',
+                boxShadow: '0 8px 32px rgba(25, 118, 210, 0.18)',
+              },
+            }}>
+              <CardActionArea onClick={() => handleCardClick(card)} sx={{ height: '100%' }}>
+                <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 120 }}>
+                  <Typography variant="h6" color="primary" fontWeight={700} textAlign="center" sx={{ letterSpacing: '0.04em' }}>
+                    {card.title}
+                  </Typography>
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          </Grid>
         ))}
-      </div>
-    </div>
+      </Grid>
+    </Box>
   );
 }

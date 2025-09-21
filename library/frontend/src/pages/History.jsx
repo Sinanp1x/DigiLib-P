@@ -1,135 +1,205 @@
 import { useState, useEffect } from 'react';
-import { Parser } from 'json2csv';
+import {
+  Container,
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Paper,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  TableContainer,
+  IconButton,
+  Tooltip,
+} from '@mui/material';
+import DownloadIcon from '@mui/icons-material/Download';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 
 export default function History() {
   const [history, setHistory] = useState([]);
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
+  const [activeTransactions, setActiveTransactions] = useState([]);
+  const [sortConfig, setSortConfig] = useState({ key: 'checkoutDate', direction: 'desc' });
   const [filter, setFilter] = useState('');
 
+  // Column configuration with labels and keys
+  const columns = [
+    { label: 'Student Name', key: 'studentName' },
+    { label: 'Student ID', key: 'studentId' },
+    { label: 'Book Title', key: 'bookTitle' },
+    { label: 'Book ID', key: 'bookId' },
+    { label: 'Check-out Date', key: 'checkoutDate' },
+    { label: 'Check-in Date', key: 'checkinDate' },
+    { label: 'Status', key: 'status' },
+  ];
+
   useEffect(() => {
-    const institutionData = JSON.parse(localStorage.getItem('institution')) || {};
+    // Align with other pages using 'digilib_institution'
+    const institutionData = JSON.parse(localStorage.getItem('digilib_institution')) || {};
     setHistory(institutionData.history || []);
+    setActiveTransactions(institutionData.transactions || []);
   }, []);
 
   const handleSort = (key) => {
-    let direction = 'ascending';
-    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-      direction = 'descending';
-    }
-    setSortConfig({ key, direction });
+    const isSameKey = sortConfig.key === key;
+    const nextDir = isSameKey && sortConfig.direction === 'asc' ? 'desc' : 'asc';
+    setSortConfig({ key, direction: nextDir });
   };
 
-  const sortedHistory = [...history].sort((a, b) => {
-    if (!sortConfig.key) return 0;
+  // Map active transactions into history-like rows
+  const activeMapped = (activeTransactions || []).map((t) => ({
+    studentName: t.studentName,
+    studentId: t.studentId,
+    bookTitle: t.bookTitle,
+    bookId: t.bookId,
+    checkoutDate: t.checkoutDate,
+    checkinDate: '',
+    status: t.status || 'checkedOut',
+  }));
 
-    if (a[sortConfig.key] < b[sortConfig.key]) {
-      return sortConfig.direction === 'ascending' ? -1 : 1;
-    }
-    if (a[sortConfig.key] > b[sortConfig.key]) {
-      return sortConfig.direction === 'ascending' ? 1 : -1;
-    }
+  const combined = [...history, ...activeMapped];
+
+  const sortedHistory = [...combined].sort((a, b) => {
+    const { key, direction } = sortConfig;
+    if (!key) return 0;
+    const av = a[key] ?? '';
+    const bv = b[key] ?? '';
+    if (av < bv) return direction === 'asc' ? -1 : 1;
+    if (av > bv) return direction === 'asc' ? 1 : -1;
     return 0;
   });
 
-  const filteredHistory = sortedHistory.filter(item =>
-    Object.values(item).some(
-      value => value.toString().toLowerCase().includes(filter.toLowerCase())
+  const filteredHistory = sortedHistory.filter((item) =>
+    Object.values(item || {}).some((value) =>
+      String(value ?? '').toLowerCase().includes(filter.toLowerCase())
     )
   );
 
+  // Simple CSV generator (no external dependency)
+  const toCSV = (rows, fields) => {
+    const escape = (val) => {
+      const s = String(val ?? '');
+      if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    };
+    const header = fields.map(escape).join(',');
+    const body = rows
+      .map((r) => fields.map((f) => escape(r[f])).join(','))
+      .join('\n');
+    return header + '\n' + body;
+  };
+
   const exportToCSV = () => {
     try {
-      const fields = ['studentName', 'studentId', 'bookTitle', 'bookId', 'checkoutDate', 'checkinDate', 'status'];
-      const json2csvParser = new Parser({ fields });
-      const csv = json2csvParser.parse(filteredHistory);
-      
+      const fields = columns.map((c) => c.key);
+      const csv = toCSV(filteredHistory, fields);
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
-      if (link.download !== undefined) {
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', 'transaction_history.csv');
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
+      const url = URL.createObjectURL(blob);
+      link.href = url;
+      link.download = 'transaction_history.csv';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Error exporting CSV:', err);
     }
   };
 
-  return (
-    <div className="max-w-7xl mx-auto p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Transaction History</h2>
-        <div className="space-x-4">
-          <input
-            type="text"
-            placeholder="Filter records..."
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="p-2 border rounded"
-          />
-          <button
-            onClick={exportToCSV}
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-          >
-            Export to CSV
-          </button>
-        </div>
-      </div>
+  const clearHistory = () => {
+    if (!window.confirm('This will permanently clear returned transaction logs. Active transactions will remain. Continue?')) return;
+    const institutionData = JSON.parse(localStorage.getItem('digilib_institution')) || {};
+    const updated = { ...institutionData, history: [] };
+    localStorage.setItem('digilib_institution', JSON.stringify(updated));
+    setHistory([]);
+  };
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white">
-          <thead>
-            <tr>
-              {['Student Name', 'Student ID', 'Book Title', 'Book ID', 'Check-out Date', 'Check-in Date', 'Status'].map((header, index) => (
-                <th
-                  key={index}
-                  onClick={() => handleSort(header.toLowerCase().replace(' ', ''))}
-                  className="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                >
-                  {header}
-                  {sortConfig.key === header.toLowerCase().replace(' ', '') && (
-                    <span>{sortConfig.direction === 'ascending' ? ' ↑' : ' ↓'}</span>
-                  )}
-                </th>
+  return (
+    <Container maxWidth="lg" sx={{ mt: 6, mb: 6 }}>
+      <Paper sx={{ p: 4, borderRadius: 3, boxShadow: '0 8px 32px rgba(25, 118, 210, 0.12)' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, gap: 2, flexWrap: 'wrap' }}>
+          <Typography variant="h4" color="primary" fontWeight={700} sx={{ letterSpacing: '0.02em' }}>
+            Transaction History
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <TextField
+              size="small"
+              placeholder="Filter records..."
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            />
+            <Button variant="contained" color="primary" onClick={exportToCSV} startIcon={<DownloadIcon />} sx={{ fontWeight: 700 }}>
+              Export CSV
+            </Button>
+            <Button variant="outlined" color="error" onClick={clearHistory} sx={{ fontWeight: 700 }}>
+              Clear History
+            </Button>
+          </Box>
+        </Box>
+
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+          <Paper sx={{ p: 2, borderRadius: 2 }}>
+            <Typography variant="overline" color="text.secondary">In Hand</Typography>
+            <Typography variant="h6" fontWeight={700}>{activeTransactions.length}</Typography>
+          </Paper>
+          <Paper sx={{ p: 2, borderRadius: 2 }}>
+            <Typography variant="overline" color="text.secondary">Returned</Typography>
+            <Typography variant="h6" fontWeight={700}>{history.filter(h => h.status === 'returned').length}</Typography>
+          </Paper>
+          <Paper sx={{ p: 2, borderRadius: 2 }}>
+            <Typography variant="overline" color="text.secondary">Total Logs</Typography>
+            <Typography variant="h6" fontWeight={700}>{combined.length}</Typography>
+          </Paper>
+        </Box>
+
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                {columns.map((col) => (
+                  <TableCell key={col.key} sx={{ fontWeight: 700, bgcolor: 'background.default' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <span>{col.label}</span>
+                      <Tooltip title="Sort">
+                        <IconButton size="small" onClick={() => handleSort(col.key)}>
+                          {sortConfig.key === col.key ? (
+                            sortConfig.direction === 'asc' ? <ArrowUpwardIcon fontSize="inherit" /> : <ArrowDownwardIcon fontSize="inherit" />
+                          ) : (
+                            <ArrowDownwardIcon fontSize="inherit" sx={{ opacity: 0.3 }} />
+                          )}
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredHistory.map((item, index) => (
+                <TableRow key={index} hover>
+                  <TableCell>{item.studentName}</TableCell>
+                  <TableCell>{item.studentId}</TableCell>
+                  <TableCell>{item.bookTitle}</TableCell>
+                  <TableCell>{item.bookId}</TableCell>
+                  <TableCell>{item.checkoutDate}</TableCell>
+                  <TableCell>{item.checkinDate}</TableCell>
+                  <TableCell>{item.status}</TableCell>
+                </TableRow>
               ))}
-            </tr>
-          </thead>
-          <tbody className="bg-white">
-            {filteredHistory.map((item, index) => (
-              <tr key={index}>
-                <td className="px-6 py-4 whitespace-nowrap border-b border-gray-200">
-                  {item.studentName}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap border-b border-gray-200">
-                  {item.studentId}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap border-b border-gray-200">
-                  {item.bookTitle}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap border-b border-gray-200">
-                  {item.bookId}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap border-b border-gray-200">
-                  {item.checkoutDate}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap border-b border-gray-200">
-                  {item.checkinDate}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap border-b border-gray-200">
-                  {item.status}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            </TableBody>
+          </Table>
+        </TableContainer>
+
         {filteredHistory.length === 0 && (
-          <p className="text-center py-4 text-gray-500">No transaction history found</p>
+          <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ py: 3 }}>
+            No transaction history found
+          </Typography>
         )}
-      </div>
-    </div>
+      </Paper>
+    </Container>
   );
 }

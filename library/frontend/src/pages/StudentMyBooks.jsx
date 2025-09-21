@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useStudentAuth } from '../StudentAuthContext';
+import { Container, Typography, Grid, Card, CardContent, Chip, Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 
 export default function StudentMyBooks() {
   const [transactions, setTransactions] = useState([]);
@@ -7,13 +8,11 @@ export default function StudentMyBooks() {
   const { student } = useStudentAuth();
 
   useEffect(() => {
-    const institution = JSON.parse(localStorage.getItem('institution'));
+    const institution = JSON.parse(localStorage.getItem('digilib_institution'));
     
-    // Get active transactions
     const activeTransactions = (institution?.transactions || [])
       .filter(t => t.studentId === student.uniqueStudentId);
     
-    // Get history
     const transactionHistory = (institution?.history || [])
       .filter(h => h.studentId === student.uniqueStudentId);
     
@@ -26,95 +25,89 @@ export default function StudentMyBooks() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-8">
-      <h1 className="text-2xl font-bold text-primary-blue mb-6">My Library Books</h1>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Typography variant="h5" fontWeight={700} color="primary" gutterBottom>
+        My Library Books
+      </Typography>
 
       {/* Active Borrows */}
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">Currently Borrowed Books</h2>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h6" gutterBottom>
+          Currently Borrowed Books
+        </Typography>
         {transactions.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {transactions.map(transaction => (
-              <div
-                key={transaction.transactionId}
-                className={`p-4 rounded-lg shadow ${
-                  isOverdue(transaction.dueDate)
-                    ? 'bg-red-50 border border-red-200'
-                    : 'bg-white'
-                }`}
-              >
-                <h3 className="font-semibold text-lg mb-2">{transaction.bookTitle}</h3>
-                <p className="text-sm text-gray-600">Book ID: {transaction.bookId}</p>
-                <p className="text-sm text-gray-600">Checked Out: {transaction.checkoutDate}</p>
-                <p className={`text-sm font-medium ${
-                  isOverdue(transaction.dueDate) ? 'text-red-600' : 'text-gray-600'
-                }`}>
-                  Due: {transaction.dueDate}
-                  {isOverdue(transaction.dueDate) && ' (OVERDUE)'}
-                </p>
-              </div>
-            ))}
-          </div>
+          <Grid container spacing={2}>
+            {transactions.map((transaction) => {
+              const overdue = isOverdue(transaction.dueDate);
+              return (
+                <Grid item xs={12} md={6} key={transaction.transactionId}>
+                  <Card variant="outlined" sx={{ borderColor: overdue ? 'error.light' : 'divider' }}>
+                    <CardContent>
+                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                        {transaction.bookTitle}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Book ID: {transaction.bookId}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Checked Out: {transaction.checkoutDate}
+                      </Typography>
+                      <Box mt={1}>
+                        <Chip
+                          label={`Due: ${transaction.dueDate}${overdue ? ' (OVERDUE)' : ''}`}
+                          color={overdue ? 'error' : 'default'}
+                          variant={overdue ? 'filled' : 'outlined'}
+                          size="small"
+                        />
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              );
+            })}
+          </Grid>
         ) : (
-          <p className="text-gray-500">No books currently borrowed</p>
+          <Typography color="text.secondary">No books currently borrowed</Typography>
         )}
-      </section>
+      </Box>
 
       {/* History */}
-      <section>
-        <h2 className="text-xl font-semibold mb-4">Borrowing History</h2>
+      <Box>
+        <Typography variant="h6" gutterBottom>
+          Borrowing History
+        </Typography>
         {history.length > 0 ? (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Book Title
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Check-out Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Check-in Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {history.map((item, index) => (
-                    <tr key={index}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {item.bookTitle}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {item.bookId}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {item.checkoutDate}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {item.checkinDate}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                          {item.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <TableContainer component={Paper}>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Book Title</TableCell>
+                  <TableCell>Check-out Date</TableCell>
+                  <TableCell>Check-in Date</TableCell>
+                  <TableCell>Status</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {history.map((item, index) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      <Typography variant="body2" fontWeight={600}>{item.bookTitle}</Typography>
+                      <Typography variant="caption" color="text.secondary">{item.bookId}</Typography>
+                    </TableCell>
+                    <TableCell>{item.checkoutDate}</TableCell>
+                    <TableCell>{item.checkinDate}</TableCell>
+                    <TableCell>
+                      <Chip label={item.status} color={item.status === 'returned' ? 'success' : 'default'} size="small" />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         ) : (
-          <p className="text-gray-500">No borrowing history available</p>
+          <Typography color="text.secondary">No borrowing history available</Typography>
         )}
-      </section>
-    </div>
+      </Box>
+    </Container>
   );
 }

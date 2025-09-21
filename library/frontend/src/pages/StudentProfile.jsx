@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-import RequireStudentAuth from './RequireStudentAuth';
-import { useAuth } from '../AuthContext';
+import { useStudentAuth } from '../StudentAuthContext';
+import { validatePassword, hashPassword } from '../utils/auth';
+import { Container, Paper, Typography, TextField, Button, Box, Avatar, Stack, Alert, Divider } from '@mui/material';
 
 export default function StudentProfile() {
-  const { student } = useAuth();
+  const { student } = useStudentAuth();
   const params = useParams();
   const navigate = useNavigate();
   const [profile, setProfile] = useState({ id: '', name: '', role: 'student', avatar: null, avatarPreview: null });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [pwdForm, setPwdForm] = useState({ current: '', next: '', confirm: '' });
+  const [pwdError, setPwdError] = useState('');
+  const [pwdSuccess, setPwdSuccess] = useState('');
 
   useEffect(() => {
     const id = params.id || (student?.id || 'student');
@@ -34,6 +38,7 @@ export default function StudentProfile() {
   };
 
   const handleChange = (e) => setProfile(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  const handlePwdChange = (e) => setPwdForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,31 +63,88 @@ export default function StudentProfile() {
     setLoading(false);
   };
 
+  const handlePasswordUpdate = (e) => {
+    e.preventDefault();
+    setPwdError('');
+    setPwdSuccess('');
+    try {
+      const inst = JSON.parse(localStorage.getItem('digilib_institution')) || {};
+      const students = Array.isArray(inst.students) ? inst.students : [];
+      const sid = student?.uniqueStudentId || profile.id;
+      const sIdx = students.findIndex(s => s.uniqueStudentId === sid);
+      if (sIdx === -1) throw new Error('Student not found');
+
+      const s = students[sIdx];
+      if (!validatePassword(pwdForm.current, s.password)) {
+        setPwdError('Current password is incorrect');
+        return;
+      }
+      if (!pwdForm.next || pwdForm.next.length < 4) {
+        setPwdError('New password must be at least 4 characters');
+        return;
+      }
+      if (pwdForm.next !== pwdForm.confirm) {
+        setPwdError('New password and confirm do not match');
+        return;
+      }
+      students[sIdx] = { ...s, password: hashPassword(pwdForm.next) };
+      const updated = { ...inst, students };
+      localStorage.setItem('digilib_institution', JSON.stringify(updated));
+      setPwdSuccess('Password updated successfully');
+      setPwdForm({ current: '', next: '', confirm: '' });
+    } catch (err) {
+      setPwdError('Failed to update password');
+      console.error(err);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-bg-light py-12">
-      <div className="max-w-2xl mx-auto p-8 bg-white rounded-2xl shadow-2xl border border-border-light">
-        <h2 className="text-2xl font-bold mb-6 text-primary-blue">Student Profile</h2>
-        {error && <div className="text-red-600 mb-4">{error}</div>}
-        {success && <div className="text-green-600 mb-4">{success}</div>}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-semibold mb-1">ID</label>
-            <input name="id" value={profile.id} readOnly className="w-full px-3 py-2 border border-border-light rounded bg-bg-light" />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold mb-1">Name</label>
-            <input name="name" value={profile.name} onChange={handleChange} className="w-full px-3 py-2 border border-border-light rounded" />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold mb-1">Avatar</label>
-            <input type="file" accept="image/*" onChange={handleFile} />
-            {profile.avatarPreview && <img src={profile.avatarPreview} alt="avatar" className="w-24 h-24 object-cover rounded mt-2" />}
-          </div>
-          <div>
-            <button type="submit" disabled={loading} className="bg-primary-blue text-white px-6 py-2 rounded">{loading ? 'Saving...' : 'Save Profile'}</button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <Container maxWidth="sm" sx={{ py: 6 }}>
+      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+        <Typography variant="h5" fontWeight={700} color="primary" gutterBottom>
+          Student Profile
+        </Typography>
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          <Stack spacing={2}>
+            <TextField name="id" label="ID" value={profile.id} InputProps={{ readOnly: true }} />
+            <TextField name="name" label="Name" value={profile.name} onChange={handleChange} />
+            <Box>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>Avatar</Typography>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Button variant="outlined" component="label">
+                  Choose File
+                  <input type="file" hidden accept="image/*" onChange={handleFile} />
+                </Button>
+                {profile.avatarPreview && (
+                  <Avatar src={profile.avatarPreview} alt="avatar" sx={{ width: 64, height: 64 }} />
+                )}
+              </Stack>
+            </Box>
+            <Box>
+              <Button type="submit" variant="contained" disabled={loading}>
+                {loading ? 'Saving...' : 'Save Profile'}
+              </Button>
+            </Box>
+          </Stack>
+        </Box>
+
+        <Divider sx={{ my: 3 }} />
+        <Typography variant="h6" fontWeight={700} gutterBottom>Change Password</Typography>
+        {pwdError && <Alert severity="error" sx={{ mb: 2 }}>{pwdError}</Alert>}
+        {pwdSuccess && <Alert severity="success" sx={{ mb: 2 }}>{pwdSuccess}</Alert>}
+        <Box component="form" onSubmit={handlePasswordUpdate}>
+          <Stack spacing={2}>
+            <TextField name="current" label="Current Password" type="password" value={pwdForm.current} onChange={handlePwdChange} required />
+            <TextField name="next" label="New Password" type="password" value={pwdForm.next} onChange={handlePwdChange} required />
+            <TextField name="confirm" label="Confirm New Password" type="password" value={pwdForm.confirm} onChange={handlePwdChange} required />
+            <Box>
+              <Button type="submit" variant="outlined">Update Password</Button>
+            </Box>
+          </Stack>
+        </Box>
+      </Paper>
+    </Container>
   );
 }

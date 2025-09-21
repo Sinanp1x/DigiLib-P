@@ -1,75 +1,75 @@
 import { useState, useEffect } from 'react';
 import { useStudentAuth } from '../StudentAuthContext';
+import { Container, Typography, Card, CardContent, Chip, Box } from '@mui/material';
 
 export default function StudentRequests() {
   const [requests, setRequests] = useState([]);
   const { student } = useStudentAuth();
 
   useEffect(() => {
-    const institution = JSON.parse(localStorage.getItem('institution'));
+    const institution = JSON.parse(localStorage.getItem('digilib_institution'));
     const studentRequests = (institution?.bookingRequests || [])
       .filter(req => req.studentId === student.uniqueStudentId);
     setRequests(studentRequests);
   }, [student.uniqueStudentId]);
 
-  const getStatusColor = (status) => {
+  const getStatusProps = (status) => {
     switch (status) {
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+        return { color: 'warning', variant: 'outlined' };
       case 'approved':
-        return 'bg-green-100 text-green-800';
+        return { color: 'success', variant: 'filled' };
       case 'rejected':
-        return 'bg-red-100 text-red-800';
+        return { color: 'error', variant: 'filled' };
       default:
-        return 'bg-gray-100 text-gray-800';
+        return { color: 'default', variant: 'outlined' };
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-8">
-      <h1 className="text-2xl font-bold text-primary-blue mb-6">My Book Requests</h1>
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Typography variant="h5" fontWeight={700} color="primary" gutterBottom>
+        My Book Requests
+      </Typography>
 
       {requests.length > 0 ? (
-        <div className="space-y-4">
-          {requests.map(request => (
-            <div
-              key={request.requestId}
-              className="bg-white rounded-lg shadow-md p-6"
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">{request.bookTitle}</h3>
-                  <p className="text-sm text-gray-600">Request ID: {request.requestId}</p>
-                  <p className="text-sm text-gray-600">
-                    Requested on: {new Date(request.requestDate).toLocaleDateString()}
-                  </p>
-                </div>
-                <span
-                  className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                    request.status
-                  )}`}
-                >
-                  {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                </span>
-              </div>
-              {request.rejectionReason && (
-                <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-md">
-                  <p className="text-sm">
-                    <strong>Reason for rejection:</strong> {request.rejectionReason}
-                  </p>
-                </div>
-              )}
-            </div>
+        <Box display="flex" flexDirection="column" gap={2}>
+          {requests.map((request) => (
+            <Card key={request.requestId}>
+              <CardContent>
+                <Box display="flex" alignItems="flex-start" justifyContent="space-between" gap={2}>
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight={600}>{request.bookTitle}</Typography>
+                    <Typography variant="caption" color="text.secondary">Request ID: {request.requestId}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Requested on: {new Date(request.requestDate).toLocaleDateString()}
+                    </Typography>
+                  </Box>
+                  <Chip
+                    label={request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                    size="small"
+                    {...getStatusProps(request.status)}
+                  />
+                </Box>
+                {request.rejectionReason && (
+                  <Box mt={2} p={1.5} bgcolor={(theme) => theme.palette.error[50]} borderRadius={1}>
+                    <Typography variant="body2" color="error.main">
+                      <strong>Reason for rejection:</strong> {request.rejectionReason}
+                    </Typography>
+                  </Box>
+                )}
+              </CardContent>
+            </Card>
           ))}
-        </div>
+        </Box>
       ) : (
-        <div className="text-center py-8">
-          <p className="text-gray-500">You haven't made any book requests yet.</p>
-          <p className="text-sm text-gray-400 mt-2">
+        <Box textAlign="center" py={6}>
+          <Typography color="text.secondary">You haven't made any book requests yet.</Typography>
+          <Typography variant="body2" color="text.disabled" mt={1}>
             Visit the catalogue to browse and request books.
-          </p>
-        </div>
+          </Typography>
+        </Box>
       )}
-    </div>
+    </Container>
   );
 }

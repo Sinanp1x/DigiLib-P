@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
+import { Container, Box, Typography, TextField, Paper, List, ListItem, ListItemButton, ListItemText, Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 
 export default function CheckoutBook() {
   const [books, setBooks] = useState([]);
@@ -8,12 +9,21 @@ export default function CheckoutBook() {
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [bookSearch, setBookSearch] = useState('');
   const [studentSearch, setStudentSearch] = useState('');
+  const [showBookSuggestions, setShowBookSuggestions] = useState(false);
+  const [showStudentSuggestions, setShowStudentSuggestions] = useState(false);
+  const [scanOpen, setScanOpen] = useState(false);
+  const videoRef = useRef(null);
+  const [scanError, setScanError] = useState('');
+  const [manualValue, setManualValue] = useState('');
 
   useEffect(() => {
-    const institutionData = JSON.parse(localStorage.getItem('institution')) || {};
+    const institutionData = JSON.parse(localStorage.getItem('digilib_institution')) || {};
     setBooks(institutionData.books || []);
     setStudents(institutionData.students || []);
   }, []);
+
+  const handleScanned = handleScannedFactory(setBookSearch, books, setSelectedBook, setScanOpen);
+  useScanner(scanOpen, handleScanned, videoRef, setScanError);
 
   // Filter books based on search input
   const filteredBooks = books.filter(book => 
@@ -36,7 +46,7 @@ export default function CheckoutBook() {
     }
 
     // Get latest data from localStorage
-    const institutionData = JSON.parse(localStorage.getItem('institution'));
+    const institutionData = JSON.parse(localStorage.getItem('digilib_institution'));
 
     // Create new transaction
     const newTransaction = {
@@ -66,7 +76,7 @@ export default function CheckoutBook() {
     };
 
     // Save to localStorage
-    localStorage.setItem('institution', JSON.stringify(updatedInstitution));
+  localStorage.setItem('digilib_institution', JSON.stringify(updatedInstitution));
 
     // Reset form and show success message
     setSelectedBook(null);
@@ -77,93 +87,141 @@ export default function CheckoutBook() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-4">Check Out Book</h2>
-      <form onSubmit={handleCheckout} className="space-y-6">
-        {/* Book Search */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Find Book
-          </label>
-          <div className="relative">
-            <input
-              type="text"
-              value={bookSearch}
-              onChange={(e) => setBookSearch(e.target.value)}
-              className="w-full p-2 border rounded"
-              placeholder="Search by title or genre..."
-            />
-            {bookSearch && (
-              <ul className="absolute z-10 w-full bg-white border rounded-b mt-1 max-h-60 overflow-auto">
-                {filteredBooks.map(book => (
-                  <li
-                    key={book.uniqueBookId}
-                    onClick={() => {
-                      setSelectedBook(book);
-                      setBookSearch(book.title);
-                    }}
-                    className="p-2 hover:bg-gray-100 cursor-pointer"
-                  >
-                    {book.title} by {book.author} ({book.copiesAvailable} available)
-                  </li>
+    <Container maxWidth="sm" sx={{ mt: 6, mb: 6 }}>
+      <Typography variant="h4" color="primary" fontWeight={700} sx={{ mb: 3 }}>
+        Check Out Book
+      </Typography>
+      <Box component="form" onSubmit={handleCheckout} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Find Book</Typography>
+          <TextField
+            fullWidth
+            value={bookSearch}
+            onChange={(e) => { setBookSearch(e.target.value); setShowBookSuggestions(true); setSelectedBook(null); }}
+            onFocus={() => setShowBookSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowBookSuggestions(false), 150)}
+            placeholder="Search by title or genre..."
+          />
+          <Box sx={{ mt: 1 }}>
+            <Button variant="outlined" size="small" onClick={() => setScanOpen(true)}>Scan Barcode</Button>
+          </Box>
+          {bookSearch && showBookSuggestions && (
+            <Paper sx={{ position: 'absolute', zIndex: 10, width: '100%', maxHeight: 240, overflow: 'auto' }}>
+              <List>
+                {filteredBooks.map((book) => (
+                  <ListItem key={book.uniqueBookId} disablePadding>
+                    <ListItemButton onClick={() => { setSelectedBook(book); setBookSearch(book.title); setShowBookSuggestions(false); }}>
+                      <ListItemText primary={`${book.title} by ${book.author}`} secondary={`${book.copiesAvailable} available`} />
+                    </ListItemButton>
+                  </ListItem>
                 ))}
-              </ul>
-            )}
-          </div>
-        </div>
+              </List>
+            </Paper>
+          )}
+        </Box>
 
-        {/* Student Search */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Find Student
-          </label>
-          <div className="relative">
-            <input
-              type="text"
-              value={studentSearch}
-              onChange={(e) => setStudentSearch(e.target.value)}
-              className="w-full p-2 border rounded"
-              placeholder="Search by name or ID..."
-            />
-            {studentSearch && (
-              <ul className="absolute z-10 w-full bg-white border rounded-b mt-1 max-h-60 overflow-auto">
-                {filteredStudents.map(student => (
-                  <li
-                    key={student.uniqueStudentId}
-                    onClick={() => {
-                      setSelectedStudent(student);
-                      setStudentSearch(student.name);
-                    }}
-                    className="p-2 hover:bg-gray-100 cursor-pointer"
-                  >
-                    {student.name} (ID: {student.uniqueStudentId})
-                  </li>
+        <Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Find Student</Typography>
+          <TextField
+            fullWidth
+            value={studentSearch}
+            onChange={(e) => { setStudentSearch(e.target.value); setShowStudentSuggestions(true); setSelectedStudent(null); }}
+            onFocus={() => setShowStudentSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowStudentSuggestions(false), 150)}
+            placeholder="Search by name or ID..."
+          />
+          {studentSearch && showStudentSuggestions && (
+            <Paper sx={{ position: 'absolute', zIndex: 10, width: '100%', maxHeight: 240, overflow: 'auto' }}>
+              <List>
+                {filteredStudents.map((student) => (
+                  <ListItem key={student.uniqueStudentId} disablePadding>
+                    <ListItemButton onClick={() => { setSelectedStudent(student); setStudentSearch(student.name); setShowStudentSuggestions(false); }}>
+                      <ListItemText primary={student.name} secondary={`ID: ${student.uniqueStudentId}`} />
+                    </ListItemButton>
+                  </ListItem>
                 ))}
-              </ul>
-            )}
-          </div>
-        </div>
+              </List>
+            </Paper>
+          )}
+        </Box>
 
-        {/* Selected Items Display */}
         {(selectedBook || selectedStudent) && (
-          <div className="bg-gray-50 p-4 rounded">
-            {selectedBook && (
-              <p className="mb-2">Selected Book: {selectedBook.title}</p>
-            )}
-            {selectedStudent && (
-              <p>Selected Student: {selectedStudent.name}</p>
-            )}
-          </div>
+          <Paper sx={{ p: 2, bgcolor: 'background.default' }}>
+            {selectedBook && <Typography sx={{ mb: 1 }}>Selected Book: <strong>{selectedBook.title}</strong></Typography>}
+            {selectedStudent && <Typography>Selected Student: <strong>{selectedStudent.name}</strong></Typography>}
+          </Paper>
         )}
 
-        <button
-          type="submit"
-          className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-          disabled={!selectedBook || !selectedStudent}
-        >
+        <Button type="submit" variant="contained" size="large" disabled={!selectedBook || !selectedStudent}>
           Check Out
-        </button>
-      </form>
-    </div>
+        </Button>
+      </Box>
+
+      {/* Scanner Dialog */}
+      <Dialog open={scanOpen} onClose={() => setScanOpen(false)} fullWidth maxWidth="sm">
+        <DialogTitle>Scan Book Barcode</DialogTitle>
+        <DialogContent>
+          {scanError && <Typography color="error" variant="body2" sx={{ mb: 1 }}>{scanError}</Typography>}
+          <video ref={videoRef} style={{ width: '100%', borderRadius: 8, border: '1px solid #eee' }} />
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 1 }}>
+            <TextField size="small" fullWidth placeholder="Manual entry" value={manualValue} onChange={(e) => setManualValue(e.target.value)} />
+            <Button onClick={() => handleScanned(manualValue)} variant="contained">Use</Button>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setScanOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
   );
+}
+
+// Scanner side-effects
+function useScanner(open, onDetected, videoRef, setError) {
+  useEffect(() => {
+    if (!open) return;
+    let stream;
+    let codeReader;
+    const start = async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.setAttribute('playsinline', true);
+          await videoRef.current.play();
+        }
+        try {
+          const ZXing = await import('@zxing/library');
+          codeReader = new ZXing.BrowserMultiFormatReader();
+          codeReader.decodeFromVideoDevice(null, videoRef.current, (result, err) => {
+            if (result) {
+              onDetected(result.getText());
+              codeReader.reset();
+            }
+          });
+        } catch (e) {
+          // optional dependency not installed; manual entry available
+        }
+      } catch (err) {
+        setError('Unable to access camera. Please allow camera access or use manual entry.');
+      }
+    };
+    start();
+    return () => {
+      if (stream) stream.getTracks().forEach(t => t.stop());
+      if (codeReader) codeReader.reset();
+    };
+  }, [open]);
+}
+
+function handleScannedFactory(setBookSearch, books, setSelectedBook, setScanOpen) {
+  return (text) => {
+    if (!text) return;
+    const match = books.find(b => b.uniqueBookId === text || b.id === text);
+    if (match) {
+      setSelectedBook(match);
+      setBookSearch(match.title);
+      setScanOpen(false);
+    }
+  };
 }

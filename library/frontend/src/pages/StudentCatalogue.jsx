@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useStudentAuth } from '../StudentAuthContext';
 import { toast } from 'react-hot-toast';
+import { Container, Typography, TextField, Grid, Card, CardContent, CardActions, Button, Chip, Box } from '@mui/material';
 
 export default function StudentCatalogue() {
   const [books, setBooks] = useState([]);
@@ -8,7 +9,7 @@ export default function StudentCatalogue() {
   const { student } = useStudentAuth();
 
   useEffect(() => {
-    const institution = JSON.parse(localStorage.getItem('institution'));
+    const institution = JSON.parse(localStorage.getItem('digilib_institution'));
     setBooks(institution?.books || []);
   }, []);
 
@@ -18,7 +19,7 @@ export default function StudentCatalogue() {
       return;
     }
 
-    const institution = JSON.parse(localStorage.getItem('institution'));
+  const institution = JSON.parse(localStorage.getItem('digilib_institution'));
     const existingRequest = institution.bookingRequests?.find(
       req => req.bookId === book.uniqueBookId && req.studentId === student.uniqueStudentId
     );
@@ -43,7 +44,7 @@ export default function StudentCatalogue() {
       bookingRequests: [...(institution.bookingRequests || []), newRequest]
     };
 
-    localStorage.setItem('institution', JSON.stringify(updatedInstitution));
+    localStorage.setItem('digilib_institution', JSON.stringify(updatedInstitution));
     toast.success('Book request submitted successfully');
   };
 
@@ -54,49 +55,58 @@ export default function StudentCatalogue() {
   );
 
   return (
-    <div className="max-w-6xl mx-auto p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-primary-blue">Browse Books</h1>
-        <input
-          type="text"
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box display="flex" alignItems="center" justifyContent="space-between" mb={3} gap={2}>
+        <Typography variant="h5" fontWeight={700} color="primary">
+          Browse Books
+        </Typography>
+        <TextField
           placeholder="Search by title, author, or genre..."
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="px-4 py-2 border rounded-lg w-80 focus:outline-none focus:ring-2 focus:ring-primary-blue"
+          size="small"
+          sx={{ minWidth: 280 }}
         />
-      </div>
+      </Box>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredBooks.map(book => (
-          <div key={book.uniqueBookId} className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="p-6">
-              <h3 className="text-lg font-semibold mb-2">{book.title}</h3>
-              <p className="text-gray-600 mb-1">by {book.author}</p>
-              <p className="text-sm text-gray-500 mb-3">Genre: {book.genre}</p>
-              <div className="flex justify-between items-center">
-                <span className={`text-sm ${book.copiesAvailable > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {book.copiesAvailable} of {book.totalCopies} available
-                </span>
-                <button
+      <Grid container spacing={2}>
+        {filteredBooks.map((book) => (
+          <Grid item xs={12} sm={6} md={4} key={book.uniqueBookId}>
+            <Card>
+              <CardContent>
+                <Typography variant="subtitle1" fontWeight={600}>{book.title}</Typography>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  by {book.author}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
+                  Genre: {book.genre}
+                </Typography>
+                <Chip
+                  label={`${book.copiesAvailable} of ${book.totalCopies} available`}
+                  color={book.copiesAvailable > 0 ? 'success' : 'error'}
+                  size="small"
+                  variant="outlined"
+                />
+              </CardContent>
+              <CardActions sx={{ px: 2, pb: 2 }}>
+                <Button
                   onClick={() => handleRequestBook(book)}
                   disabled={book.copiesAvailable === 0}
-                  className={`px-4 py-2 rounded-lg text-white ${
-                    book.copiesAvailable > 0
-                      ? 'bg-primary-blue hover:bg-secondary-blue'
-                      : 'bg-gray-400 cursor-not-allowed'
-                  }`}
+                  variant="contained"
                 >
                   Request Book
-                </button>
-              </div>
-            </div>
-          </div>
+                </Button>
+              </CardActions>
+            </Card>
+          </Grid>
         ))}
-      </div>
+      </Grid>
 
       {filteredBooks.length === 0 && (
-        <p className="text-center text-gray-500 mt-8">No books found matching your search.</p>
+        <Typography align="center" color="text.secondary" mt={4}>
+          No books found matching your search.
+        </Typography>
       )}
-    </div>
+    </Container>
   );
 }

@@ -15,35 +15,35 @@ import Community from './pages/Community';
 import AdminCommunity from './pages/AdminCommunity';
 import BarcodeScanner from './pages/BarcodeScanner';
 import Profile from './pages/Profile';
+import AdminLayout from './components/AdminLayout'; // Import AdminLayout
 
 export default function AppRoutes() {
   return (
     <Router>
       <Routes>
         {/* Admin Routes */}
+                <Route path="/admin/signup" element={<Signup />} />
+        <Route path="/admin/login" element={<Login />} />
         <Route
           path="/admin/*"
           element={
-            <>
-              <Navbar />
-              <Routes>
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
-                <Route path="/dashboard/students" element={<RequireAuth><Students /></RequireAuth>} />
-                <Route path="/dashboard/catalogue" element={<RequireAuth><Catalogue /></RequireAuth>} />
-                <Route path="/dashboard/checkout" element={<RequireAuth><CheckoutBook /></RequireAuth>} />
-                <Route path="/dashboard/scan" element={<RequireAuth><BarcodeScanner /></RequireAuth>} />
-                <Route path="/dashboard/profile" element={<RequireAuth><Profile /></RequireAuth>} />
-                <Route path="/dashboard/transactions" element={<RequireAuth><Transactions /></RequireAuth>} />
-                <Route path="/dashboard/history" element={<RequireAuth><History /></RequireAuth>} />
-                <Route path="/dashboard/requests" element={<RequireAuth><Requests /></RequireAuth>} />
-                <Route path="/dashboard/community" element={<RequireAuth><AdminCommunity /></RequireAuth>} />
-                <Route path="*" element={<Login />} />
-              </Routes>
-            </>
+            <RequireAuth>
+              <AdminLayout />
+            </RequireAuth>
           }
-        />
+        >
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="dashboard/students" element={<Students />} />
+          <Route path="dashboard/catalogue" element={<Catalogue />} />
+          <Route path="dashboard/checkout" element={<CheckoutBook />} />
+          <Route path="dashboard/scan" element={<BarcodeScanner />} />
+          <Route path="dashboard/profile" element={<Profile />} />
+          <Route path="dashboard/transactions" element={<Transactions />} />
+          <Route path="dashboard/history" element={<History />} />
+          <Route path="dashboard/requests" element={<Requests />} />
+          <Route path="dashboard/community" element={<AdminCommunity />} />
+          <Route path="*" element={<Navigate to="dashboard" replace />} />
+        </Route>
 
         {/* Student Routes */}
         <Route path="/student-login" element={<StudentLogin />} />

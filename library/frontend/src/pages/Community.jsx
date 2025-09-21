@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useStudentAuth } from '../StudentAuthContext';
 import { toast } from 'react-hot-toast';
+import { Container, Typography, Paper, Box, TextField, Button, MenuItem, List, ListItem, ListItemButton, ListItemText, Chip, Stack, Rating } from '@mui/material';
 
 export default function Community() {
   const [posts, setPosts] = useState([]);
@@ -14,7 +15,7 @@ export default function Community() {
   const { student } = useStudentAuth();
 
   useEffect(() => {
-    const institution = JSON.parse(localStorage.getItem('institution')) || {};
+  const institution = JSON.parse(localStorage.getItem('digilib_institution')) || {};
     setPosts(institution.communityPosts || []);
     setBooks(institution.books || []);
   }, []);
@@ -31,7 +32,7 @@ export default function Community() {
       return;
     }
 
-    const institution = JSON.parse(localStorage.getItem('institution'));
+  const institution = JSON.parse(localStorage.getItem('digilib_institution'));
     
     // Check if student has borrowed this book
     const hasHistory = (institution.history || []).some(
@@ -60,7 +61,7 @@ export default function Community() {
       communityPosts: [...(institution.communityPosts || []), newPost]
     };
 
-    localStorage.setItem('institution', JSON.stringify(updatedInstitution));
+  localStorage.setItem('digilib_institution', JSON.stringify(updatedInstitution));
     setPosts([...posts, newPost]);
     setReviewForm({ reviewText: '', rating: 5 });
     setSelectedBook(null);
@@ -69,7 +70,7 @@ export default function Community() {
   };
 
   const handleLike = (postId) => {
-    const institution = JSON.parse(localStorage.getItem('institution'));
+  const institution = JSON.parse(localStorage.getItem('digilib_institution'));
     const updatedPosts = institution.communityPosts.map(post => {
       if (post.postId === postId) {
         const likes = new Set(post.likes);
@@ -94,124 +95,85 @@ export default function Community() {
   );
 
   return (
-    <div className="max-w-4xl mx-auto p-8">
-      <h1 className="text-2xl font-bold text-primary-blue mb-6">Community Reviews</h1>
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Typography variant="h5" fontWeight={800} color="primary" gutterBottom>
+        Community Reviews
+      </Typography>
 
-      {/* Write Review Form */}
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-4">Write a Review</h2>
-        <form onSubmit={handleReviewSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select Book
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                value={bookSearch}
-                onChange={(e) => setBookSearch(e.target.value)}
-                placeholder="Search for a book..."
-                className="w-full p-2 border rounded"
+      {/* Write Review */}
+      <Paper sx={{ p: 3, mb: 4 }}>
+        <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+          Write a Review
+        </Typography>
+        <Box component="form" onSubmit={handleReviewSubmit}>
+          <Stack spacing={2}>
+            <Box>
+              <Typography variant="caption" color="text.secondary">Select Book</Typography>
+              <Box sx={{ position: 'relative', mt: 0.5 }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  value={bookSearch}
+                  onChange={(e) => setBookSearch(e.target.value)}
+                  placeholder="Search for a book..."
+                />
+                {bookSearch && (
+                  <Paper sx={{ position: 'absolute', width: '100%', maxHeight: 240, overflow: 'auto', zIndex: 2 }}>
+                    <List dense>
+                      {filteredBooks.map(book => (
+                        <ListItem key={book.uniqueBookId} disablePadding>
+                          <ListItemButton onClick={() => handleBookSelect(book)}>
+                            <ListItemText primary={`${book.title}`} secondary={`by ${book.author}`} />
+                          </ListItemButton>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Paper>
+                )}
+              </Box>
+            </Box>
+            <Box>
+              <Typography variant="caption" color="text.secondary">Rating</Typography>
+              <Rating
+                name="review-rating"
+                value={Number(reviewForm.rating)}
+                onChange={(_, val) => setReviewForm({ ...reviewForm, rating: val || 5 })}
               />
-              {bookSearch && (
-                <ul className="absolute z-10 w-full bg-white border rounded-b mt-1 max-h-60 overflow-auto">
-                  {filteredBooks.map(book => (
-                    <li
-                      key={book.uniqueBookId}
-                      onClick={() => handleBookSelect(book)}
-                      className="p-2 hover:bg-gray-100 cursor-pointer"
-                    >
-                      {book.title} by {book.author}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Rating
-            </label>
-            <select
-              value={reviewForm.rating}
-              onChange={(e) => setReviewForm({ ...reviewForm, rating: e.target.value })}
-              className="w-full p-2 border rounded"
-            >
-              {[5, 4, 3, 2, 1].map(num => (
-                <option key={num} value={num}>{num} Star{num !== 1 ? 's' : ''}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Your Review
-            </label>
-            <textarea
+            </Box>
+            <TextField
+              multiline minRows={4}
+              placeholder="Write your review here..."
               value={reviewForm.reviewText}
               onChange={(e) => setReviewForm({ ...reviewForm, reviewText: e.target.value })}
-              className="w-full p-2 border rounded min-h-[100px]"
-              placeholder="Write your review here..."
-              required
             />
-          </div>
+            <Button type="submit" variant="contained">Post Review</Button>
+          </Stack>
+        </Box>
+      </Paper>
 
-          <button
-            type="submit"
-            className="w-full bg-primary-blue text-white p-2 rounded hover:bg-secondary-blue"
-          >
-            Post Review
-          </button>
-        </form>
-      </div>
-
-      {/* Reviews Feed */}
-      <div className="space-y-6">
+      {/* Feed */}
+      <Stack spacing={2}>
         {posts.map(post => (
-          <div key={post.postId} className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="text-lg font-semibold">{post.bookTitle}</h3>
-                <p className="text-sm text-gray-600">
+          <Paper key={post.postId} sx={{ p: 2 }}>
+            <Box display="flex" alignItems="flex-start" justifyContent="space-between">
+              <Box>
+                <Typography fontWeight={700}>{post.bookTitle}</Typography>
+                <Typography variant="caption" color="text.secondary">
                   Reviewed by {post.studentName} • {new Date(post.date).toLocaleDateString()}
-                </p>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <span
-                      key={i}
-                      className={`text-xl ${
-                        i < post.rating ? 'text-yellow-400' : 'text-gray-300'
-                      }`}
-                    >
-                      ★
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <p className="text-gray-700 mb-4">{post.reviewText}</p>
-            <div className="flex items-center justify-between">
-              <button
-                onClick={() => handleLike(post.postId)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded ${
-                  post.likes.includes(student.uniqueStudentId)
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'hover:bg-gray-50'
-                }`}
-              >
-                <span>👍</span>
-                <span>{post.likes.length} likes</span>
-              </button>
-            </div>
-          </div>
+                </Typography>
+              </Box>
+              <Rating value={Number(post.rating)} readOnly size="small" />
+            </Box>
+            <Typography variant="body2" sx={{ mt: 1, mb: 1.5 }}>{post.reviewText}</Typography>
+            <Button size="small" variant={post.likes.includes(student.uniqueStudentId) ? 'contained' : 'outlined'} onClick={() => handleLike(post.postId)}>
+              👍 {post.likes.length} {post.likes.length === 1 ? 'like' : 'likes'}
+            </Button>
+          </Paper>
         ))}
         {posts.length === 0 && (
-          <p className="text-center text-gray-500">No reviews yet. Be the first to write one!</p>
+          <Typography align="center" color="text.secondary">No reviews yet. Be the first to write one!</Typography>
         )}
-      </div>
-    </div>
+      </Stack>
+    </Container>
   );
 }

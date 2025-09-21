@@ -1,21 +1,20 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import { Container, Grid, Card, CardContent, Typography, Button, Box } from '@mui/material';
 
 export default function Requests() {
   const [requests, setRequests] = useState([]);
 
   useEffect(() => {
-    const institution = JSON.parse(localStorage.getItem('institution'));
-    const pendingRequests = (institution?.bookingRequests || [])
-      .filter(req => req.status === 'pending');
+    const institution = JSON.parse(localStorage.getItem('digilib_institution'));
+    const pendingRequests = (institution?.bookingRequests || []).filter((req) => req.status === 'pending');
     setRequests(pendingRequests);
   }, []);
 
   const handleRequest = (request, approved, reason = '') => {
-    const institution = JSON.parse(localStorage.getItem('institution'));
-    
+    const institution = JSON.parse(localStorage.getItem('digilib_institution')) || {};
+
     if (approved) {
-      // Create new transaction
       const newTransaction = {
         transactionId: `TXN-${Date.now()}`,
         bookId: request.bookId,
@@ -24,97 +23,80 @@ export default function Requests() {
         studentName: request.studentName,
         checkoutDate: new Date().toISOString().split('T')[0],
         dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        status: "checkedOut"
+        status: 'checkedOut',
       };
 
-      // Update book availability
-      const updatedBooks = institution.books.map(book => {
+      const updatedBooks = (institution.books || []).map((book) => {
         if (book.uniqueBookId === request.bookId) {
-          if (book.copiesAvailable === 0) {
+          if ((book.copiesAvailable || 0) === 0) {
+            toast.error('No copies available');
             throw new Error('No copies available');
           }
-          return { ...book, copiesAvailable: book.copiesAvailable - 1 };
+          return { ...book, copiesAvailable: (book.copiesAvailable || 0) - 1 };
         }
         return book;
       });
 
-      // Update institution data
       institution.books = updatedBooks;
       institution.transactions = [...(institution.transactions || []), newTransaction];
     }
 
-    // Update request status
-    institution.bookingRequests = institution.bookingRequests.map(req => {
+    institution.bookingRequests = (institution.bookingRequests || []).map((req) => {
       if (req.requestId === request.requestId) {
-        return {
-          ...req,
-          status: approved ? 'approved' : 'rejected',
-          ...(reason && { rejectionReason: reason })
-        };
+        return { ...req, status: approved ? 'approved' : 'rejected', ...(reason && { rejectionReason: reason }) };
       }
       return req;
     });
 
-    localStorage.setItem('institution', JSON.stringify(institution));
-    
-    // Update local state
-    setRequests(requests.filter(req => req.requestId !== request.requestId));
-    
-    toast.success(
-      approved ? 'Request approved and book checked out' : 'Request rejected'
-    );
+    localStorage.setItem('digilib_institution', JSON.stringify(institution));
+    setRequests((prev) => prev.filter((req) => req.requestId !== request.requestId));
+    toast.success(approved ? 'Request approved and book checked out' : 'Request rejected');
   };
 
   const handleReject = (request) => {
     const reason = window.prompt('Please provide a reason for rejection:');
-    if (reason !== null) {
-      handleRequest(request, false, reason);
-    }
+    if (reason !== null) handleRequest(request, false, reason);
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-8">
-      <h2 className="text-2xl font-bold text-primary-blue mb-6">Pending Book Requests</h2>
-
+    <Container maxWidth="lg" sx={{ mt: 6, mb: 6 }}>
+      <Typography variant="h4" color="primary" fontWeight={700} sx={{ mb: 4 }}>
+        Pending Book Requests
+      </Typography>
       {requests.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4">
-          {requests.map(request => (
-            <div
-              key={request.requestId}
-              className="bg-white rounded-lg shadow-md p-6"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-lg font-semibold">{request.bookTitle}</h3>
-                  <p className="text-sm text-gray-600">Book ID: {request.bookId}</p>
-                  <p className="text-sm text-gray-600">
+        <Grid container spacing={3}>
+          {requests.map((request) => (
+            <Grid item key={request.requestId} xs={12} md={6}>
+              <Card sx={{ borderRadius: 3, boxShadow: '0 4px 24px rgba(25, 118, 210, 0.10)' }}>
+                <CardContent>
+                  <Typography variant="h6" color="primary" fontWeight={700} gutterBottom>
+                    {request.bookTitle}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">Book ID: {request.bookId}</Typography>
+                  <Typography variant="body2" color="text.secondary">
                     Requested by: {request.studentName} ({request.studentId})
-                  </p>
-                  <p className="text-sm text-gray-600">
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
                     Request Date: {new Date(request.requestDate).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="flex items-center justify-end space-x-4">
-                  <button
-                    onClick={() => handleRequest(request, true)}
-                    className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-                  >
-                    Approve
-                  </button>
-                  <button
-                    onClick={() => handleReject(request)}
-                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                  >
-                    Reject
-                  </button>
-                </div>
-              </div>
-            </div>
+                  </Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
+                    <Button variant="contained" color="success" onClick={() => handleRequest(request, true)}>
+                      Approve
+                    </Button>
+                    <Button variant="outlined" color="error" onClick={() => handleReject(request)}>
+                      Reject
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
           ))}
-        </div>
+        </Grid>
       ) : (
-        <p className="text-center text-gray-500">No pending requests</p>
+        <Typography variant="body2" color="text.secondary" textAlign="center">
+          No pending requests
+        </Typography>
       )}
-    </div>
+    </Container>
   );
 }

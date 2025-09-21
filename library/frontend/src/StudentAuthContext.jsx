@@ -7,7 +7,7 @@ export const StudentAuthProvider = ({ children }) => {
   const [student, setStudent] = useState(null);
 
   const login = (studentId, password) => {
-    const institution = JSON.parse(localStorage.getItem('institution'));
+    const institution = JSON.parse(localStorage.getItem('digilib_institution'));
     
     if (!institution?.portalEnabled) {
       throw new Error('Student portal is not enabled');

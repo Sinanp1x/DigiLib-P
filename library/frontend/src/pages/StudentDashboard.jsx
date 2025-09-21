@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import StudentNavbar from '../components/StudentNavbar';
 import StudentCatalogue from './StudentCatalogue';
@@ -6,51 +7,121 @@ import StudentRequests from './StudentRequests';
 import StudentFines from './StudentFines';
 import Community from './Community';
 import StudentProfile from './StudentProfile';
+import { Box, Container, Grid, Card, CardContent, Typography, Chip, Divider, List, ListItem, ListItemText } from '@mui/material';
+import { useStudentAuth } from '../StudentAuthContext';
 
 function StudentDashboardHome() {
+  const { student } = useStudentAuth();
+
+  const { activeBorrows, pendingRequests, outstandingFine, recentActivity } = useMemo(() => {
+    const institution = JSON.parse(localStorage.getItem('digilib_institution')) || {};
+    const transactions = (institution.transactions || []).filter(t => t.studentId === student?.uniqueStudentId);
+    const requests = (institution.bookingRequests || []).filter(r => r.studentId === student?.uniqueStudentId);
+
+    // Calculate fines
+    const FINE_RATE_PER_DAY = 1;
+    const today = new Date();
+    let fineTotal = 0;
+    transactions.forEach(t => {
+      const due = new Date(t.dueDate);
+      if (due < today) {
+        const days = Math.floor((today - due) / (1000 * 60 * 60 * 24));
+        fineTotal += days * FINE_RATE_PER_DAY;
+      }
+    });
+
+    const history = (institution.history || []).filter(h => h.studentId === student?.uniqueStudentId);
+    const recent = history
+      .slice(-5)
+      .reverse()
+      .map(h => ({
+        primary: `${h.status === 'returned' ? 'Returned' : 'Borrowed'} ${h.bookTitle}`,
+        secondary: `${h.checkoutDate}${h.checkinDate ? ` → ${h.checkinDate}` : ''}`,
+      }));
+
+    return {
+      activeBorrows: transactions.length,
+      pendingRequests: requests.filter(r => r.status === 'pending').length,
+      outstandingFine: fineTotal,
+      recentActivity: recent,
+    };
+  }, [student?.uniqueStudentId]);
+
   return (
-    <div className="max-w-4xl mx-auto p-8">
-      <h1 className="text-3xl font-bold text-primary-blue mb-6">Welcome to Your Library Portal</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Quick Stats</h2>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Books Currently Borrowed:</span>
-              <span className="font-semibold text-primary-blue">0</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Pending Requests:</span>
-              <span className="font-semibold text-primary-blue">0</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Outstanding Fines:</span>
-              <span className="font-semibold text-red-500">$0.00</span>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-xl shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-          <p className="text-gray-500 text-center py-4">No recent activity</p>
-        </div>
-      </div>
-    </div>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Typography variant="h4" fontWeight={700} color="primary" gutterBottom>
+        Welcome to Your Library Portal
+      </Typography>
+
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
+          <Card elevation={3}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>Quick Stats</Typography>
+              <Divider sx={{ mb: 2 }} />
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <Box display="flex" alignItems="center" justifyContent="space-between">
+                    <Typography color="text.secondary">Books Currently Borrowed</Typography>
+                    <Chip label={activeBorrows} color="primary" variant="outlined" />
+                  </Box>
+                </Grid>
+                <Grid item xs={12}>
+                  <Box display="flex" alignItems="center" justifyContent="space-between">
+                    <Typography color="text.secondary">Pending Requests</Typography>
+                    <Chip label={pendingRequests} color="primary" variant="outlined" />
+                  </Box>
+                </Grid>
+                <Grid item xs={12}>
+                  <Box display="flex" alignItems="center" justifyContent="space-between">
+                    <Typography color="text.secondary">Outstanding Fines</Typography>
+                    <Chip label={`$${outstandingFine.toFixed(2)}`} color={outstandingFine > 0 ? 'error' : 'success'} variant="outlined" />
+                  </Box>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Card elevation={3}>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>Recent Activity</Typography>
+              <Divider sx={{ mb: 2 }} />
+              {recentActivity.length > 0 ? (
+                <List dense>
+                  {recentActivity.map((item, idx) => (
+                    <ListItem key={idx} disableGutters>
+                      <ListItemText primary={item.primary} secondary={item.secondary} />
+                    </ListItem>
+                  ))}
+                </List>
+              ) : (
+                <Typography color="text.secondary" align="center" sx={{ py: 2 }}>
+                  No recent activity
+                </Typography>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+      
+    </Container>
   );
 }
 
 export default function StudentDashboard() {
   return (
-    <div className="min-h-screen bg-bg-light">
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       <StudentNavbar />
       <Routes>
         <Route index element={<StudentDashboardHome />} />
         <Route path="/catalogue" element={<StudentCatalogue />} />
-  <Route path="/profile" element={<StudentProfile />} />
+        <Route path="/profile" element={<StudentProfile />} />
         <Route path="/my-books" element={<StudentMyBooks />} />
         <Route path="/requests" element={<StudentRequests />} />
         <Route path="/fines" element={<StudentFines />} />
         <Route path="/community" element={<Community />} />
       </Routes>
-    </div>
+    </Box>
   );
 }

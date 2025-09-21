@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+
 
 body {
 	/* This ensures the entire page uses the new font */

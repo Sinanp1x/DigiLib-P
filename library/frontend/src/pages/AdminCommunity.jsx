@@ -5,7 +5,7 @@ export default function AdminCommunity() {
   const [filter, setFilter] = useState('');
 
   useEffect(() => {
-    const institution = JSON.parse(localStorage.getItem('institution')) || {};
+  const institution = JSON.parse(localStorage.getItem('digilib_institution')) || {};
     setPosts(institution.communityPosts || []);
   }, []);
 

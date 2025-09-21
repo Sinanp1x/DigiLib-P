@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useStudentAuth } from '../StudentAuthContext';
+import { Container, Typography, Paper, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip } from '@mui/material';
 
 const FINE_RATE_PER_DAY = 1; // $1 per day
 
@@ -9,9 +10,8 @@ export default function StudentFines() {
   const { student } = useStudentAuth();
 
   useEffect(() => {
-    const institution = JSON.parse(localStorage.getItem('institution'));
+    const institution = JSON.parse(localStorage.getItem('digilib_institution'));
     
-    // Calculate fines for active transactions
     const activeTransactions = (institution?.transactions || [])
       .filter(t => t.studentId === student.uniqueStudentId);
 
@@ -34,7 +34,6 @@ export default function StudentFines() {
       return null;
     }).filter(Boolean);
 
-    // Get existing paid fines from history
     const paidFines = (institution?.history || [])
       .filter(h => h.studentId === student.uniqueStudentId && h.fine)
       .map(h => ({
@@ -46,91 +45,69 @@ export default function StudentFines() {
     const allFines = [...calculatedFines, ...paidFines];
     setFines(allFines);
     
-    // Calculate total unpaid fines
     const total = calculatedFines.reduce((sum, fine) => sum + fine.amount, 0);
     setTotalFine(total);
   }, [student.uniqueStudentId]);
 
   return (
-    <div className="max-w-4xl mx-auto p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-primary-blue">My Fines</h1>
-        <div className="bg-white px-6 py-3 rounded-lg shadow-md">
-          <span className="text-gray-600">Total Outstanding:</span>
-          <span className="ml-2 text-xl font-bold text-red-600">
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
+        <Typography variant="h5" fontWeight={700} color="primary">My Fines</Typography>
+        <Paper elevation={2} sx={{ px: 2.5, py: 1.5, borderRadius: 2 }}>
+          <Typography variant="body2" color="text.secondary" component="span">Total Outstanding:</Typography>
+          <Typography variant="h6" color="error.main" component="span" ml={1}>
             ${totalFine.toFixed(2)}
-          </span>
-        </div>
-      </div>
+          </Typography>
+        </Paper>
+      </Box>
 
       {fines.length > 0 ? (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Book
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Due Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Days Overdue
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Amount
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+        <TableContainer component={Paper}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Book</TableCell>
+                <TableCell>Due Date</TableCell>
+                <TableCell>Days Overdue</TableCell>
+                <TableCell>Amount</TableCell>
+                <TableCell>Status</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
               {fines.map((fine, index) => (
-                <tr key={index}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {fine.bookTitle}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {fine.dueDate}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {fine.daysOverdue}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    ${fine.amount.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        fine.paid
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}
-                    >
-                      {fine.paid ? 'Paid' : 'Unpaid'}
-                    </span>
-                  </td>
-                </tr>
+                <TableRow key={index}>
+                  <TableCell>
+                    <Typography variant="body2" fontWeight={600}>{fine.bookTitle}</Typography>
+                  </TableCell>
+                  <TableCell>{fine.dueDate}</TableCell>
+                  <TableCell>{fine.daysOverdue}</TableCell>
+                  <TableCell>${fine.amount.toFixed(2)}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={fine.paid ? 'Paid' : 'Unpaid'}
+                      color={fine.paid ? 'success' : 'error'}
+                      size="small"
+                      variant={fine.paid ? 'outlined' : 'filled'}
+                    />
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
+        </TableContainer>
       ) : (
-        <div className="text-center py-8 bg-white rounded-lg shadow-md">
-          <p className="text-gray-500">You don't have any fines</p>
-        </div>
+        <Paper sx={{ textAlign: 'center', py: 4, borderRadius: 2 }}>
+          <Typography color="text.secondary">You don't have any fines</Typography>
+        </Paper>
       )}
 
-      <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="text-blue-800 font-medium mb-2">Fine Policy</h3>
-        <p className="text-sm text-blue-600">
+      <Paper sx={{ mt: 3, p: 2, bgcolor: 'info.50', border: (theme) => `1px solid ${theme.palette.info.light}` }}>
+        <Typography color="info.dark" fontWeight={600} gutterBottom>Fine Policy</Typography>
+        <Typography variant="body2" color="info.main">
           Fines are calculated at a rate of ${FINE_RATE_PER_DAY.toFixed(2)} per day for overdue books.
           Please return books on time to avoid fines. Contact the librarian if you need to extend your due date.
-        </p>
-      </div>
-    </div>
+        </Typography>
+      </Paper>
+    </Container>
   );
 }

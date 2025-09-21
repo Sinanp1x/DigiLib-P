@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import bcrypt from 'bcryptjs';
-import { Link } from 'react-router-dom';
+import { Container, Box, Typography, TextField, Button, Link } from '@mui/material';
 
 export default function Signup() {
   const [form, setForm] = useState({
@@ -38,21 +38,88 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-bg-light flex items-center justify-center">
-      <div className="max-w-md w-full p-10 bg-white rounded-2xl shadow-2xl border border-border-light">
-        <h2 className="text-3xl font-extrabold mb-8 text-center text-primary-blue drop-shadow">Institution Signup</h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <input type="text" name="institutionName" placeholder="Institution Name" value={form.institutionName} onChange={handleChange} className="w-full px-4 py-3 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue transition text-text-dark bg-bg-light" />
-          <input type="text" name="adminName" placeholder="Admin Name" value={form.adminName} onChange={handleChange} className="w-full px-4 py-3 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue transition text-text-dark bg-bg-light" />
-          <input type="email" name="adminEmail" placeholder="Admin Email" value={form.adminEmail} onChange={handleChange} className="w-full px-4 py-3 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue transition text-text-dark bg-bg-light" />
-          <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} className="w-full px-4 py-3 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue transition text-text-dark bg-bg-light" />
-          {error && <div className="text-red-600 text-sm font-semibold">{error}</div>}
-          <button type="submit" className="w-full bg-primary-blue text-white py-3 rounded-lg font-bold hover:bg-secondary-blue transition-colors disabled:bg-primary-blue/70 shadow">Signup</button>
-      </form>
-        <div className="mt-6 text-center">
-          <Link to="/login" className="text-primary-blue hover:underline font-medium">Login instead</Link>
-        </div>
-      </div>
-    </div>
+    <Container component="main" maxWidth="xs">
+      <Box
+        sx={{
+          marginTop: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          padding: 4,
+          borderRadius: 2,
+          boxShadow: 3,
+          backgroundColor: 'background.paper',
+        }}
+      >
+        <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
+          Institution Signup
+        </Typography>
+        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="institutionName"
+            label="Institution Name"
+            name="institutionName"
+            autoComplete="organization"
+            autoFocus
+            value={form.institutionName}
+            onChange={handleChange}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="adminName"
+            label="Admin Name"
+            name="adminName"
+            autoComplete="name"
+            value={form.adminName}
+            onChange={handleChange}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="adminEmail"
+            label="Admin Email"
+            name="adminEmail"
+            autoComplete="email"
+            value={form.adminEmail}
+            onChange={handleChange}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="Password"
+            type="password"
+            id="password"
+            autoComplete="new-password"
+            value={form.password}
+            onChange={handleChange}
+          />
+          {error && (
+            <Typography color="error" variant="body2" sx={{ mt: 1, mb: 2 }}>
+              {error}
+            </Typography>
+          )}
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 3, mb: 2 }}
+          >
+            Signup
+          </Button>
+          <Link component={RouterLink} to="/login" variant="body2">
+            {"Login instead"}
+          </Link>
+        </Box>
+      </Box>
+    </Container>
   );
 }
+
