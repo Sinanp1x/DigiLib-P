@@ -5,6 +5,12 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { useDropzone } from 'react-dropzone';
 import { Container, Box, Typography, TextField, Button, Grid, Card, CardContent, CardMedia, FormControlLabel, Checkbox, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+
+// Use Vite environment variable if available.
+// In dev mode, prefer relative requests (''), so Vite's dev server can proxy `/api` to the backend.
+const BACKEND_URL = (typeof import.meta !== 'undefined' && import.meta.env)
+  ? (import.meta.env.VITE_BACKEND_URL || (import.meta.env.DEV ? '' : 'http://localhost:5000'))
+  : 'http://localhost:5000';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DownloadIcon from '@mui/icons-material/Download';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -104,7 +110,7 @@ export default function Catalogue() {
     try {
       const res = await axios.post('/api/generate-barcode',
         { bookId },
-        { baseURL: 'http://localhost:5000' }
+        { baseURL: BACKEND_URL }
       );
       return res.data.barcodePath;
     } catch (err) {
@@ -137,7 +143,7 @@ export default function Catalogue() {
     data.append('bookId', bookId);
     let imagePath = '';
     try {
-      const res = await axios.post('/api/upload', data, { baseURL: 'http://localhost:5000' });
+  const res = await axios.post('/api/upload', data, { baseURL: BACKEND_URL });
       imagePath = res.data.imagePath;
     } catch (err) {
       setError('Image upload failed.');
@@ -179,7 +185,7 @@ export default function Catalogue() {
     doc.text('Library Catalogue', 14, 16);
     autoTable(doc, {
       head: [['ID', 'Title', 'Author', 'Genre', 'Copies', 'Barcode']],
-      body: sortedBooks.map(b => [b.id, b.title, b.author, b.genre, b.copies, b.barcodePath ? `http://localhost:5000${b.barcodePath}` : '']),
+      body: sortedBooks.map(b => [b.id, b.title, b.author, b.genre, b.copies, b.barcodePath ? `${BACKEND_URL}${b.barcodePath}` : '']),
       startY: 24,
     });
     doc.save('catalogue.pdf');
@@ -309,7 +315,7 @@ export default function Catalogue() {
                 {book.imagePath && (
                   <CardMedia
                     component="img"
-                    image={`http://localhost:5000${book.imagePath}`}
+                    image={`${BACKEND_URL}${book.imagePath}`}
                     alt={book.title}
                     sx={{ width: 180, objectFit: 'cover', bgcolor: '#f4f6f8' }}
                   />
@@ -329,7 +335,7 @@ export default function Catalogue() {
                       <Button
                         variant="outlined"
                         color="primary"
-                        href={`http://localhost:5000${book.barcodePath}`}
+                        href={`${BACKEND_URL}${book.barcodePath}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         startIcon={<VisibilityIcon />}

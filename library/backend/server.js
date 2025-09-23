@@ -197,3 +197,31 @@ app.get('/api/profile/:id', async (req, res) => {
     res.status(404).json({ error: 'Profile not found' });
   }
 });
+
+// Simple institution persistence endpoints (persist to data/institution.json)
+const DATA_DIR = path.join(__dirname, 'data');
+const INSTITUTION_FILE = path.join(DATA_DIR, 'institution.json');
+
+app.get('/api/institution', async (req, res) => {
+  try {
+    const content = await fs.readFile(INSTITUTION_FILE, 'utf8');
+    res.json(JSON.parse(content));
+  } catch (err) {
+    // If file not found return empty object
+    if (err.code === 'ENOENT') return res.json({});
+    console.error('Error reading institution file', err);
+    res.status(500).json({ error: 'Failed to read institution data' });
+  }
+});
+
+app.post('/api/institution', async (req, res) => {
+  try {
+    const institution = req.body || {};
+    await fs.mkdir(DATA_DIR, { recursive: true });
+    await fs.writeFile(INSTITUTION_FILE, JSON.stringify(institution, null, 2), 'utf8');
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Error saving institution file', err);
+    res.status(500).json({ error: 'Failed to save institution data' });
+  }
+});

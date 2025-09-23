@@ -4,6 +4,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import { Container, Paper, Typography, TextField, Button, Box, Avatar, Stack, Alert, Grid } from '@mui/material';
 
+const BACKEND_URL = (typeof import.meta !== 'undefined' && import.meta.env)
+  ? (import.meta.env.VITE_BACKEND_URL || (import.meta.env.DEV ? '' : 'http://localhost:5000'))
+  : 'http://localhost:5000';
+
 export default function Profile() {
   const { admin } = useAuth();
   const params = useParams();
@@ -20,11 +24,21 @@ export default function Profile() {
     setProfile(p => ({ ...p, id }));
     const fetchProfile = async () => {
       try {
-        const res = await axios.get(`/api/profile/${id}`, { baseURL: 'http://localhost:5000' });
-        setProfile(prev => ({ ...prev, ...res.data }));
-        if (res.data.avatar) setProfile(prev => ({ ...prev, avatarPreview: `http://localhost:5000${res.data.avatar}` }));
+        const res = await axios.get(`/api/profile/${id}`, { baseURL: BACKEND_URL });
+        const inst = JSON.parse(localStorage.getItem('digilib_institution')) || {};
+        const merged = {
+          id,
+          name: res.data.name || inst.adminName || '',
+          role: res.data.role || inst.role || '',
+          avatar: res.data.avatar || null,
+        };
+        setProfile(prev => ({ ...prev, ...merged }));
+        if (res.data.avatar) setProfile(prev => ({ ...prev, avatarPreview: `${BACKEND_URL}${res.data.avatar}` }));
       } catch (err) {
-        // ignore 404
+        // If no server profile, fall back to localStorage admin data
+        const inst = JSON.parse(localStorage.getItem('digilib_institution')) || {};
+        const fallbackName = inst.adminName || admin?.name || '';
+        setProfile(prev => ({ ...prev, name: fallbackName }));
       }
     };
     fetchProfile();
@@ -47,11 +61,17 @@ export default function Profile() {
       data.append('name', profile.name);
       data.append('role', profile.role);
       if (profile.avatar) data.append('file', profile.avatar);
-      const res = await axios.post('/api/profile', data, { baseURL: 'http://localhost:5000' });
+      const res = await axios.post('/api/profile', data, { baseURL: BACKEND_URL });
       // Update preview to backend URL if avatar was saved
       if (res.data?.profile?.avatar) {
-        setProfile(prev => ({ ...prev, avatarPreview: `http://localhost:5000${res.data.profile.avatar}` }));
+        setProfile(prev => ({ ...prev, avatarPreview: `${BACKEND_URL}${res.data.profile.avatar}` }));
       }
+      // Also update local institution admin name so UI is consistent even without server
+      try {
+        const inst = JSON.parse(localStorage.getItem('digilib_institution')) || {};
+        inst.adminName = profile.name;
+        localStorage.setItem('digilib_institution', JSON.stringify(inst));
+      } catch (e) {}
       setSuccess('Profile saved successfully');
       setIsEditing(false);
       setTimeout(() => setSuccess(''), 3000);
@@ -81,9 +101,26 @@ export default function Profile() {
             </Grid>
             <Grid item xs={12} md={8}>
               <Stack spacing={3}>
-                <TextField name="id" label="Admin ID" value={profile.id} InputProps={{ readOnly: true }} variant="filled" />
-                <TextField name="name" label="Full Name" value={profile.name} onChange={handleChange} disabled={!isEditing} variant="filled" />
-                <TextField name="role" label="Role" value={profile.role} onChange={handleChange} disabled={!isEditing} variant="filled" />
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Admin ID</Typography>
+                  <Typography sx={{ mb: 1 }}>{profile.id}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Full Name</Typography>
+                  {isEditing ? (
+                    <TextField name="name" value={profile.name} onChange={handleChange} fullWidth />
+                  ) : (
+                    <Typography sx={{ mb: 1 }}>{profile.name}</Typography>
+                  )}
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Role</Typography>
+                  {isEditing ? (
+                    <TextField name="role" value={profile.role} onChange={handleChange} fullWidth />
+                  ) : (
+                    <Typography sx={{ mb: 1 }}>{profile.role}</Typography>
+                  )}
+                </Box>
                 <Box sx={{ display: 'flex', gap: 2, pt: 2 }}>
                   {isEditing ? (
                     <>

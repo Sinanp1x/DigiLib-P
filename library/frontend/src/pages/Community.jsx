@@ -34,15 +34,8 @@ export default function Community() {
 
   const institution = JSON.parse(localStorage.getItem('digilib_institution'));
     
-    // Check if student has borrowed this book
-    const hasHistory = (institution.history || []).some(
-      h => h.studentId === student.uniqueStudentId && h.bookId === selectedBook.uniqueBookId
-    );
-
-    if (!hasHistory) {
-      toast.error('You can only review books you have borrowed');
-      return;
-    }
+    // Previously we required students to have borrowed the book before reviewing.
+    // Removing that restriction so students may review any book in the catalog.
 
     const newPost = {
       postId: `POST-${Date.now()}`,
@@ -84,9 +77,9 @@ export default function Community() {
       return post;
     });
 
-    institution.communityPosts = updatedPosts;
-    localStorage.setItem('institution', JSON.stringify(institution));
-    setPosts(updatedPosts);
+  institution.communityPosts = updatedPosts;
+  localStorage.setItem('digilib_institution', JSON.stringify(institution));
+  setPosts(updatedPosts);
   };
 
   const filteredBooks = books.filter(book =>

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { Container, Box, Typography, TextField, Paper, List, ListItem, ListItemButton, ListItemText, Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Container, Box, Typography, TextField, Paper, List, ListItem, ListItemButton, ListItemText, Button, Dialog, DialogTitle, DialogContent, DialogActions, Card, CardContent, CardMedia, Grid } from '@mui/material';
 
 export default function CheckoutBook() {
   const [books, setBooks] = useState([]);
@@ -78,6 +78,9 @@ export default function CheckoutBook() {
     // Save to localStorage
   localStorage.setItem('digilib_institution', JSON.stringify(updatedInstitution));
 
+      // Notify other parts of the app that transactions changed
+      window.dispatchEvent(new Event('digilib:transactions-updated'));
+
     // Reset form and show success message
     setSelectedBook(null);
     setSelectedStudent(null);
@@ -87,75 +90,93 @@ export default function CheckoutBook() {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 6, mb: 6 }}>
+    <Container maxWidth="md" sx={{ mt: 6, mb: 6 }}>
       <Typography variant="h4" color="primary" fontWeight={700} sx={{ mb: 3 }}>
         Check Out Book
       </Typography>
-      <Box component="form" onSubmit={handleCheckout} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <Box>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Find Book</Typography>
-          <TextField
-            fullWidth
-            value={bookSearch}
-            onChange={(e) => { setBookSearch(e.target.value); setShowBookSuggestions(true); setSelectedBook(null); }}
-            onFocus={() => setShowBookSuggestions(true)}
-            onBlur={() => setTimeout(() => setShowBookSuggestions(false), 150)}
-            placeholder="Search by title or genre..."
-          />
-          <Box sx={{ mt: 1 }}>
-            <Button variant="outlined" size="small" onClick={() => setScanOpen(true)}>Scan Barcode</Button>
+
+      <Card sx={{ p: 2 }}>
+        <Box component="form" onSubmit={handleCheckout} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Find Book</Typography>
+              <TextField
+                fullWidth
+                value={bookSearch}
+                onChange={(e) => { setBookSearch(e.target.value); setShowBookSuggestions(true); setSelectedBook(null); }}
+                onFocus={() => setShowBookSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowBookSuggestions(false), 150)}
+                placeholder="Search by title or genre..."
+              />
+              <Box sx={{ mt: 1 }}>
+                <Button variant="outlined" size="small" onClick={() => setScanOpen(true)}>Scan Barcode</Button>
+              </Box>
+              {bookSearch && showBookSuggestions && (
+                <Paper sx={{ position: 'absolute', zIndex: 10, width: '100%', maxHeight: 240, overflow: 'auto' }}>
+                  <List>
+                    {filteredBooks.map((book) => (
+                      <ListItem key={book.uniqueBookId} disablePadding>
+                        <ListItemButton onClick={() => { setSelectedBook(book); setBookSearch(book.title); setShowBookSuggestions(false); }}>
+                          <ListItemText primary={`${book.title} by ${book.author}`} secondary={`${book.copiesAvailable} available`} />
+                        </ListItemButton>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Paper>
+              )}
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Find Student</Typography>
+              <TextField
+                fullWidth
+                value={studentSearch}
+                onChange={(e) => { setStudentSearch(e.target.value); setShowStudentSuggestions(true); setSelectedStudent(null); }}
+                onFocus={() => setShowStudentSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowStudentSuggestions(false), 150)}
+                placeholder="Search by name or ID..."
+              />
+              {studentSearch && showStudentSuggestions && (
+                <Paper sx={{ position: 'absolute', zIndex: 10, width: '100%', maxHeight: 240, overflow: 'auto' }}>
+                  <List>
+                    {filteredStudents.map((student) => (
+                      <ListItem key={student.uniqueStudentId} disablePadding>
+                        <ListItemButton onClick={() => { setSelectedStudent(student); setStudentSearch(student.name); setShowStudentSuggestions(false); }}>
+                          <ListItemText primary={student.name} secondary={`ID: ${student.uniqueStudentId}`} />
+                        </ListItemButton>
+                      </ListItem>
+                    ))}
+                  </List>
+                </Paper>
+              )}
+            </Grid>
+          </Grid>
+
+          {(selectedBook || selectedStudent) && (
+            <Card variant="outlined" sx={{ display: 'flex', gap: 2, p: 1, alignItems: 'center' }}>
+              {selectedBook && (
+                <CardMedia
+                  component="img"
+                  image={selectedBook.imagePath ? selectedBook.imagePath : ''}
+                  alt={selectedBook.title}
+                  sx={{ width: 96, height: 120, objectFit: 'cover', bgcolor: '#f5f7fa', borderRadius: 1 }}
+                />
+              )}
+              <CardContent sx={{ flex: 1 }}>
+                {selectedBook && <Typography variant="subtitle1">Selected Book: <strong>{selectedBook.title}</strong></Typography>}
+                {selectedStudent && <Typography variant="body2">Selected Student: <strong>{selectedStudent.name}</strong></Typography>}
+                <Typography variant="caption" color="text.secondary">Checkout Date: {new Date().toISOString().split('T')[0]}</Typography>
+              </CardContent>
+            </Card>
+          )}
+
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Button type="submit" variant="contained" size="large" disabled={!selectedBook || !selectedStudent}>
+              Check Out
+            </Button>
           </Box>
-          {bookSearch && showBookSuggestions && (
-            <Paper sx={{ position: 'absolute', zIndex: 10, width: '100%', maxHeight: 240, overflow: 'auto' }}>
-              <List>
-                {filteredBooks.map((book) => (
-                  <ListItem key={book.uniqueBookId} disablePadding>
-                    <ListItemButton onClick={() => { setSelectedBook(book); setBookSearch(book.title); setShowBookSuggestions(false); }}>
-                      <ListItemText primary={`${book.title} by ${book.author}`} secondary={`${book.copiesAvailable} available`} />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-              </List>
-            </Paper>
-          )}
         </Box>
-
-        <Box>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Find Student</Typography>
-          <TextField
-            fullWidth
-            value={studentSearch}
-            onChange={(e) => { setStudentSearch(e.target.value); setShowStudentSuggestions(true); setSelectedStudent(null); }}
-            onFocus={() => setShowStudentSuggestions(true)}
-            onBlur={() => setTimeout(() => setShowStudentSuggestions(false), 150)}
-            placeholder="Search by name or ID..."
-          />
-          {studentSearch && showStudentSuggestions && (
-            <Paper sx={{ position: 'absolute', zIndex: 10, width: '100%', maxHeight: 240, overflow: 'auto' }}>
-              <List>
-                {filteredStudents.map((student) => (
-                  <ListItem key={student.uniqueStudentId} disablePadding>
-                    <ListItemButton onClick={() => { setSelectedStudent(student); setStudentSearch(student.name); setShowStudentSuggestions(false); }}>
-                      <ListItemText primary={student.name} secondary={`ID: ${student.uniqueStudentId}`} />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-              </List>
-            </Paper>
-          )}
-        </Box>
-
-        {(selectedBook || selectedStudent) && (
-          <Paper sx={{ p: 2, bgcolor: 'background.default' }}>
-            {selectedBook && <Typography sx={{ mb: 1 }}>Selected Book: <strong>{selectedBook.title}</strong></Typography>}
-            {selectedStudent && <Typography>Selected Student: <strong>{selectedStudent.name}</strong></Typography>}
-          </Paper>
-        )}
-
-        <Button type="submit" variant="contained" size="large" disabled={!selectedBook || !selectedStudent}>
-          Check Out
-        </Button>
-      </Box>
+      </Card>
 
       {/* Scanner Dialog */}
       <Dialog open={scanOpen} onClose={() => setScanOpen(false)} fullWidth maxWidth="sm">

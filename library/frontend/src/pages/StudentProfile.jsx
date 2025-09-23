@@ -5,6 +5,10 @@ import { useStudentAuth } from '../StudentAuthContext';
 import { validatePassword, hashPassword } from '../utils/auth';
 import { Container, Paper, Typography, TextField, Button, Box, Avatar, Stack, Alert, Divider, Grid } from '@mui/material';
 
+const BACKEND_URL = (typeof import.meta !== 'undefined' && import.meta.env)
+  ? (import.meta.env.VITE_BACKEND_URL || (import.meta.env.DEV ? '' : 'http://localhost:5000'))
+  : 'http://localhost:5000';
+
 export default function StudentProfile() {
   const { student } = useStudentAuth();
   const params = useParams();
@@ -23,11 +27,21 @@ export default function StudentProfile() {
     setProfile(p => ({ ...p, id }));
     const fetchProfile = async () => {
       try {
-        const res = await axios.get(`/api/profile/${id}`, { baseURL: 'http://localhost:5000' });
-        setProfile(prev => ({ ...prev, ...res.data }));
-        if (res.data.avatar) setProfile(prev => ({ ...prev, avatarPreview: `http://localhost:5000${res.data.avatar}` }));
+        const res = await axios.get(`/api/profile/${id}`, { baseURL: BACKEND_URL });
+        const inst = JSON.parse(localStorage.getItem('digilib_institution')) || {};
+        const studentLocal = (inst.students || []).find(s => s.uniqueStudentId === id) || {};
+        const merged = {
+          id,
+          name: res.data.name || studentLocal.name || '',
+          role: res.data.role || studentLocal.role || 'student',
+          avatar: res.data.avatar || null,
+        };
+        setProfile(prev => ({ ...prev, ...merged }));
+        if (res.data.avatar) setProfile(prev => ({ ...prev, avatarPreview: `${BACKEND_URL}${res.data.avatar}` }));
       } catch (err) {
-        // ignore 404
+        const inst = JSON.parse(localStorage.getItem('digilib_institution')) || {};
+        const studentLocal = (inst.students || []).find(s => s.uniqueStudentId === id) || {};
+        setProfile(prev => ({ ...prev, name: studentLocal.name || '' }));
       }
     };
     fetchProfile();
@@ -42,7 +56,8 @@ export default function StudentProfile() {
   const handlePwdChange = (e) => setPwdForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    // allow calling handleSubmit() without an event (manual save button)
+    if (e && e.preventDefault) e.preventDefault();
     setLoading(true);
     setError('');
     try {
@@ -51,10 +66,26 @@ export default function StudentProfile() {
       data.append('name', profile.name);
       data.append('role', profile.role);
       if (profile.avatar) data.append('file', profile.avatar);
-      const res = await axios.post('/api/profile', data, { baseURL: 'http://localhost:5000' });
+      const res = await axios.post('/api/profile', data, { baseURL: BACKEND_URL });
       if (res.data?.profile?.avatar) {
-        setProfile(prev => ({ ...prev, avatarPreview: `http://localhost:5000${res.data.profile.avatar}` }));
+        setProfile(prev => ({ ...prev, avatarPreview: `${BACKEND_URL}${res.data.profile.avatar}` }));
       }
+      // Also persist name and avatar path to local students list for offline consistency
+      try {
+        const inst = JSON.parse(localStorage.getItem('digilib_institution')) || {};
+        const students = Array.isArray(inst.students) ? inst.students : [];
+        const idx = students.findIndex(s => s.uniqueStudentId === profile.id);
+        if (idx !== -1) {
+          const updated = { ...students[idx], name: profile.name };
+          if (res.data?.profile?.avatar) {
+            // store the backend-relative avatar path so other parts can construct the full URL
+            updated.avatar = res.data.profile.avatar;
+          }
+          students[idx] = updated;
+        }
+        inst.students = students;
+        localStorage.setItem('digilib_institution', JSON.stringify(inst));
+      } catch (e) {}
       setSuccess('Profile saved successfully');
       setIsEditing(false); // to exit editing mode
       setTimeout(() => setSuccess(''), 3000);
@@ -119,12 +150,35 @@ export default function StudentProfile() {
             </Grid>
             <Grid item xs={12} md={8}>
               <Stack spacing={3}>
-                <TextField name="id" label="Student ID" value={profile.id} InputProps={{ readOnly: true }} variant="filled" />
-                <TextField name="name" label="Full Name" value={profile.name} onChange={handleChange} disabled={!isEditing} variant="filled" />
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Student ID</Typography>
+                  <Typography sx={{ mb: 1 }}>{profile.id}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Full Name</Typography>
+                  {isEditing ? (
+                    <TextField
+                      name="name"
+                      value={profile.name}
+                      onChange={handleChange}
+                      fullWidth
+                      onKeyDown={(e) => {
+                        // Prevent Enter from submitting the form so users have time to edit
+                        if (e.key === 'Enter') e.preventDefault();
+                      }}
+                    />
+                  ) : (
+                    <Typography sx={{ mb: 1 }}>{profile.name}</Typography>
+                  )}
+                </Box>
                 <Box sx={{ display: 'flex', gap: 2, pt: 2 }}>
                   {isEditing ? (
                     <>
-                      <Button type="submit" variant="contained" disabled={loading}>
+                      <Button
+                        variant="contained"
+                        disabled={loading}
+                        onClick={() => handleSubmit()}
+                      >
                         {loading ? 'Saving...' : 'Save Changes'}
                       </Button>
                       <Button variant="outlined" color="secondary" onClick={() => setIsEditing(false)}>

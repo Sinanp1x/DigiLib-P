@@ -1,17 +1,29 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import axios from 'axios';
 import { Container, Typography, Button, Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Chip } from '@mui/material';
 
 export default function Transactions() {
   const [transactions, setTransactions] = useState([]);
   const [filter, setFilter] = useState('');
 
-  useEffect(() => {
+  // Helper to refresh transactions from localStorage
+  const refreshTransactionsFromStorage = () => {
     const institutionData = JSON.parse(localStorage.getItem('digilib_institution')) || {};
     setTransactions(institutionData.transactions || []);
+  };
+
+  useEffect(() => {
+    // Initial load
+    refreshTransactionsFromStorage();
+
+    // Listen for custom event so other parts of the app can trigger a refresh
+    const handler = () => refreshTransactionsFromStorage();
+    window.addEventListener('digilib:transactions-updated', handler);
+    return () => window.removeEventListener('digilib:transactions-updated', handler);
   }, []);
 
-  const handleExtendDueDate = (transactionId) => {
+  const handleExtendDueDate = async (transactionId) => {
     const days = window.prompt('Enter number of days to extend:', '7');
     if (!days || isNaN(days)) return;
 
@@ -26,12 +38,23 @@ export default function Transactions() {
     });
 
     const updatedInstitution = { ...institutionData, transactions: updatedTransactions };
-    localStorage.setItem('digilib_institution', JSON.stringify(updatedInstitution));
+    // Update local state optimistically so UI updates immediately
     setTransactions(updatedTransactions);
-    toast.success('Due date extended successfully!');
+    // Persist and notify listeners
+    localStorage.setItem('digilib_institution', JSON.stringify(updatedInstitution));
+    // Try to persist to backend; fall back to localStorage
+    try {
+      await axios.post('/api/institution', updatedInstitution, { baseURL: '' });
+      window.dispatchEvent(new Event('digilib:transactions-updated'));
+      toast.success('Due date extended and saved to server');
+    } catch (err) {
+      console.warn('Failed to save institution to server, saved locally', err);
+      window.dispatchEvent(new Event('digilib:transactions-updated'));
+      toast('Due date extended locally (server not available)', { icon: '⚠️' });
+    }
   };
 
-  const handleCheckIn = (transaction) => {
+  const handleCheckIn = async (transaction) => {
     const institutionData = JSON.parse(localStorage.getItem('digilib_institution'));
 
     const historyEntry = {
@@ -60,7 +83,15 @@ export default function Transactions() {
 
     localStorage.setItem('digilib_institution', JSON.stringify(updatedInstitution));
     setTransactions(updatedTransactions);
-    toast.success('Book checked in successfully!');
+    try {
+      await axios.post('/api/institution', updatedInstitution, { baseURL: '' });
+      window.dispatchEvent(new Event('digilib:transactions-updated'));
+      toast.success('Book checked in and saved to server');
+    } catch (err) {
+      console.warn('Failed to save institution to server, saved locally', err);
+      window.dispatchEvent(new Event('digilib:transactions-updated'));
+      toast('Book checked in locally (server not available)', { icon: '⚠️' });
+    }
   };
 
   const isOverdue = (dueDate) => new Date(dueDate) < new Date();

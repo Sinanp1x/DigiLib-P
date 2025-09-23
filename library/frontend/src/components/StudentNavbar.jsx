@@ -1,6 +1,6 @@
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useStudentAuth } from '../StudentAuthContext';
-import { AppBar, Toolbar, Typography, Box, Button, IconButton, Menu, MenuItem, Divider } from '@mui/material';
+import { AppBar, Toolbar, Typography, Box, Button, IconButton, Menu, MenuItem, Divider, Avatar } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useState } from 'react';
 

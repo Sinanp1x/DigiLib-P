@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useStudentAuth } from '../StudentAuthContext';
-import { Container, Typography, Grid, Card, CardContent, Chip, Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Container, Typography, Grid, Card, CardContent, Chip, Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button } from '@mui/material';
 
 export default function StudentMyBooks() {
   const [transactions, setTransactions] = useState([]);
@@ -8,16 +8,20 @@ export default function StudentMyBooks() {
   const { student } = useStudentAuth();
 
   useEffect(() => {
-    const institution = JSON.parse(localStorage.getItem('digilib_institution'));
-    
-    const activeTransactions = (institution?.transactions || [])
-      .filter(t => t.studentId === student.uniqueStudentId);
-    
-    const transactionHistory = (institution?.history || [])
-      .filter(h => h.studentId === student.uniqueStudentId);
-    
-    setTransactions(activeTransactions);
-    setHistory(transactionHistory);
+    const load = () => {
+      const institution = JSON.parse(localStorage.getItem('digilib_institution'));
+      const activeTransactions = (institution?.transactions || [])
+        .filter(t => t.studentId === student.uniqueStudentId);
+      const transactionHistory = (institution?.history || [])
+        .filter(h => h.studentId === student.uniqueStudentId);
+      setTransactions(activeTransactions);
+      setHistory(transactionHistory);
+    };
+
+    load();
+    const handler = () => load();
+    window.addEventListener('digilib:transactions-updated', handler);
+    return () => window.removeEventListener('digilib:transactions-updated', handler);
   }, [student.uniqueStudentId]);
 
   const isOverdue = (dueDate) => {
@@ -59,6 +63,31 @@ export default function StudentMyBooks() {
                           variant={overdue ? 'filled' : 'outlined'}
                           size="small"
                         />
+                        <Box sx={{ mt: 2 }}>
+                          <Button size="small" variant="outlined" onClick={() => {
+                            // create an extension request for this transaction
+                            const days = parseInt(prompt('Request extension days (default 7):', '7') || '7', 10);
+                            const inst = JSON.parse(localStorage.getItem('digilib_institution')) || {};
+                            const ext = inst.extensionRequests || [];
+                            const req = {
+                              requestId: `EXT-${Date.now()}`,
+                              transactionId: transaction.transactionId,
+                              studentId: transaction.studentId,
+                              bookId: transaction.bookId,
+                              requestedDays: Number.isNaN(days) ? 7 : days,
+                              status: 'pending',
+                              createdAt: new Date().toISOString()
+                            };
+                            ext.push(req);
+                            inst.extensionRequests = ext;
+                            localStorage.setItem('digilib_institution', JSON.stringify(inst));
+                            // notify admin/other parts
+                            window.dispatchEvent(new Event('digilib:requests-updated'));
+                            alert('Extension request submitted');
+                          }}>
+                            Request Extend
+                          </Button>
+                        </Box>
                       </Box>
                     </CardContent>
                   </Card>

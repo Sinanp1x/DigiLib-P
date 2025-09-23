@@ -10,12 +10,12 @@ export default function StudentFines() {
   const { student } = useStudentAuth();
 
   useEffect(() => {
-    const institution = JSON.parse(localStorage.getItem('digilib_institution'));
-    
-    const activeTransactions = (institution?.transactions || [])
-      .filter(t => t.studentId === student.uniqueStudentId);
+    const load = () => {
+      const institution = JSON.parse(localStorage.getItem('digilib_institution'));
+      const activeTransactions = (institution?.transactions || [])
+        .filter(t => t.studentId === student.uniqueStudentId);
 
-    const calculatedFines = activeTransactions.map(transaction => {
+      const calculatedFines = activeTransactions.map(transaction => {
       const dueDate = new Date(transaction.dueDate);
       const today = new Date();
       
@@ -34,19 +34,25 @@ export default function StudentFines() {
       return null;
     }).filter(Boolean);
 
-    const paidFines = (institution?.history || [])
-      .filter(h => h.studentId === student.uniqueStudentId && h.fine)
-      .map(h => ({
-        ...h.fine,
-        paid: true,
-        bookTitle: h.bookTitle,
-      }));
+      const paidFines = (institution?.history || [])
+        .filter(h => h.studentId === student.uniqueStudentId && h.fine)
+        .map(h => ({
+          ...h.fine,
+          paid: true,
+          bookTitle: h.bookTitle,
+        }));
 
-    const allFines = [...calculatedFines, ...paidFines];
-    setFines(allFines);
-    
-    const total = calculatedFines.reduce((sum, fine) => sum + fine.amount, 0);
-    setTotalFine(total);
+      const allFines = [...calculatedFines, ...paidFines];
+      setFines(allFines);
+
+      const total = calculatedFines.reduce((sum, fine) => sum + fine.amount, 0);
+      setTotalFine(total);
+    };
+
+    load();
+    const handler = () => load();
+    window.addEventListener('digilib:transactions-updated', handler);
+    return () => window.removeEventListener('digilib:transactions-updated', handler);
   }, [student.uniqueStudentId]);
 
   return (

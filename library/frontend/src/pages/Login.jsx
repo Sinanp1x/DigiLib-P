@@ -52,7 +52,7 @@ export default function Login() {
           </Button>
         </Box>
         <Box sx={{ mt: 4, textAlign: 'center' }}>
-          <Link to="/signup" style={{ color: '#1976d2', textDecoration: 'underline', fontWeight: 500 }}>Signup instead</Link>
+          <Link to="/admin/signup" style={{ color: '#1976d2', textDecoration: 'underline', fontWeight: 500 }}>Signup instead</Link>
         </Box>
       </Paper>
     </Box>

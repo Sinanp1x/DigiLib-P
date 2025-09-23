@@ -50,6 +50,8 @@ export default function Requests() {
 
     localStorage.setItem('digilib_institution', JSON.stringify(institution));
     setRequests((prev) => prev.filter((req) => req.requestId !== request.requestId));
+  // Notify other parts of the app that transactions changed
+  window.dispatchEvent(new Event('digilib:transactions-updated'));
     toast.success(approved ? 'Request approved and book checked out' : 'Request rejected');
   };
 
