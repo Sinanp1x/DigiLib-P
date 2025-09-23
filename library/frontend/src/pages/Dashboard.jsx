@@ -33,15 +33,7 @@ export default function Dashboard() {
       <Grid container spacing={4} justifyContent="center" sx={{ maxWidth: '1100px', mx: 'auto' }}>
         {cards.map((card) => (
           <Grid item key={card.title} xs={12} sm={6} md={4} lg={3}>
-            <Card sx={{
-              borderRadius: 4,
-              boxShadow: '0 4px 24px rgba(25, 118, 210, 0.10)',
-              transition: 'transform 0.2s, box-shadow 0.2s',
-              '&:hover': {
-                transform: 'scale(1.04)',
-                boxShadow: '0 8px 32px rgba(25, 118, 210, 0.18)',
-              },
-            }}>
+            <Card>
               <CardActionArea onClick={() => handleCardClick(card)} sx={{ height: '100%' }}>
                 <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 120 }}>
                   <Typography variant="h6" color="primary" fontWeight={700} textAlign="center" sx={{ letterSpacing: '0.04em' }}>

@@ -8,6 +8,8 @@ import { Container, Box, Typography, TextField, Button, Grid, Card, CardContent,
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DownloadIcon from '@mui/icons-material/Download';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import Add from '@mui/icons-material/Add';
+import Remove from '@mui/icons-material/Remove';
 
 function generateBookId(genre, author) {
   const g = genre.slice(0, 3).toUpperCase();
@@ -198,10 +200,13 @@ export default function Catalogue() {
           Manage Catalogue
         </Typography>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
-          <FormControlLabel
-            control={<Checkbox checked={showAddBooks} onChange={() => setShowAddBooks(!showAddBooks)} />}
-            label="Add Books"
-          />
+          <Button
+            variant={showAddBooks ? "outlined" : "contained"}
+            onClick={() => setShowAddBooks(!showAddBooks)}
+            startIcon={showAddBooks ? <Remove /> : <Add />}
+          >
+            {showAddBooks ? 'Hide Form' : 'Add New Book'}
+          </Button>
     </Box>
   {showAddBooks ? (
   <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2, mb: 6 }}>

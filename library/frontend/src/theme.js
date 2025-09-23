@@ -4,14 +4,18 @@ const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#1976d2', // A nice blue
+      main: '#0D47A1', // Deep blue
     },
     secondary: {
-      main: '#dc004e', // A vibrant red
+      main: '#FF7043', // Coral
+    },
+    text: {
+      primary: '#212121',
+      secondary: '#757575',
     },
     background: {
-      default: '#f4f6f8', // Light grey background
-      paper: '#ffffff', // White paper background
+      default: 'transparent',
+      paper: 'rgba(255, 255, 255, 0.7)', // Semi-transparent white for glassmorphism
     },
   },
   typography: {
@@ -37,7 +41,39 @@ const theme = createTheme({
     MuiAppBar: {
       styleOverrides: {
         root: {
-          boxShadow: 'none', // No shadow for a cleaner look
+          backgroundColor: 'rgba(255, 255, 255, 0.5)',
+          backdropFilter: 'blur(10px)',
+          boxShadow: 'none',
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 16,
+          backgroundColor: 'rgba(255, 255, 255, 0.7)',
+          backdropFilter: 'blur(10px)',
+          boxShadow: 'rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px',
+          transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: 'rgba(0, 0, 0, 0.1) 0px 10px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px',
+          }
+        }
+      }
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundColor: 'rgba(255, 255, 255, 0.7)',
+          backdropFilter: 'blur(10px)',
+        },
+      },
+    },
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          backgroundImage: 'linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%)',
         },
       },
     },

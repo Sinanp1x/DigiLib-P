@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useStudentAuth } from '../StudentAuthContext';
 import { validatePassword, hashPassword } from '../utils/auth';
-import { Container, Paper, Typography, TextField, Button, Box, Avatar, Stack, Alert, Divider } from '@mui/material';
+import { Container, Paper, Typography, TextField, Button, Box, Avatar, Stack, Alert, Divider, Grid } from '@mui/material';
 
 export default function StudentProfile() {
   const { student } = useStudentAuth();
@@ -16,6 +16,7 @@ export default function StudentProfile() {
   const [pwdForm, setPwdForm] = useState({ current: '', next: '', confirm: '' });
   const [pwdError, setPwdError] = useState('');
   const [pwdSuccess, setPwdSuccess] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     const id = params.id || (student?.id || 'student');
@@ -55,7 +56,8 @@ export default function StudentProfile() {
         setProfile(prev => ({ ...prev, avatarPreview: `http://localhost:5000${res.data.profile.avatar}` }));
       }
       setSuccess('Profile saved successfully');
-      setTimeout(() => navigate('/student-dashboard'), 700);
+      setIsEditing(false); // to exit editing mode
+      setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setError('Failed to save profile');
       console.error(err);
@@ -99,43 +101,53 @@ export default function StudentProfile() {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ py: 6 }}>
-      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+    <Container maxWidth="md" sx={{ py: 6 }}>
+      <Paper elevation={3} sx={{ p: 4, borderRadius: 4 }}>
         <Typography variant="h5" fontWeight={700} color="primary" gutterBottom>
           Student Profile
         </Typography>
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
         {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
-        <Box component="form" onSubmit={handleSubmit} noValidate>
-          <Stack spacing={2}>
-            <TextField name="id" label="ID" value={profile.id} InputProps={{ readOnly: true }} />
-            <TextField name="name" label="Name" value={profile.name} onChange={handleChange} />
-            <Box>
-              <Typography variant="subtitle2" color="text.secondary" gutterBottom>Avatar</Typography>
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Button variant="outlined" component="label">
-                  Choose File
-                  <input type="file" hidden accept="image/*" onChange={handleFile} />
-                </Button>
-                {profile.avatarPreview && (
-                  <Avatar src={profile.avatarPreview} alt="avatar" sx={{ width: 64, height: 64 }} />
-                )}
-              </Stack>
-            </Box>
-            <Box>
-              <Button type="submit" variant="contained" disabled={loading}>
-                {loading ? 'Saving...' : 'Save Profile'}
+        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 3 }}>
+          <Grid container spacing={4}>
+            <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+              <Avatar src={profile.avatarPreview} alt="avatar" sx={{ width: 150, height: 150, mb: 2 }} />
+              <Button variant="outlined" component="label" disabled={!isEditing}>
+                Change Avatar
+                <input type="file" hidden accept="image/*" onChange={handleFile} />
               </Button>
-            </Box>
-          </Stack>
+            </Grid>
+            <Grid item xs={12} md={8}>
+              <Stack spacing={3}>
+                <TextField name="id" label="Student ID" value={profile.id} InputProps={{ readOnly: true }} variant="filled" />
+                <TextField name="name" label="Full Name" value={profile.name} onChange={handleChange} disabled={!isEditing} variant="filled" />
+                <Box sx={{ display: 'flex', gap: 2, pt: 2 }}>
+                  {isEditing ? (
+                    <>
+                      <Button type="submit" variant="contained" disabled={loading}>
+                        {loading ? 'Saving...' : 'Save Changes'}
+                      </Button>
+                      <Button variant="outlined" color="secondary" onClick={() => setIsEditing(false)}>
+                        Cancel
+                      </Button>
+                    </>
+                  ) : (
+                    <Button variant="contained" onClick={() => setIsEditing(true)}>
+                      Edit Profile
+                    </Button>
+                  )}
+                </Box>
+              </Stack>
+            </Grid>
+          </Grid>
         </Box>
 
-        <Divider sx={{ my: 3 }} />
+        <Divider sx={{ my: 4 }} />
         <Typography variant="h6" fontWeight={700} gutterBottom>Change Password</Typography>
         {pwdError && <Alert severity="error" sx={{ mb: 2 }}>{pwdError}</Alert>}
         {pwdSuccess && <Alert severity="success" sx={{ mb: 2 }}>{pwdSuccess}</Alert>}
-        <Box component="form" onSubmit={handlePasswordUpdate}>
-          <Stack spacing={2}>
+        <Box component="form" onSubmit={handlePasswordUpdate} sx={{ maxWidth: 400 }}>
+          <Stack spacing={2} sx={{ mt: 2 }}>
             <TextField name="current" label="Current Password" type="password" value={pwdForm.current} onChange={handlePwdChange} required />
             <TextField name="next" label="New Password" type="password" value={pwdForm.next} onChange={handlePwdChange} required />
             <TextField name="confirm" label="Confirm New Password" type="password" value={pwdForm.confirm} onChange={handlePwdChange} required />

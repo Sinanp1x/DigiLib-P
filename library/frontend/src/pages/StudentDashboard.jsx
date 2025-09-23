@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Link as RouterLink } from 'react-router-dom';
 import StudentNavbar from '../components/StudentNavbar';
 import StudentCatalogue from './StudentCatalogue';
 import StudentMyBooks from './StudentMyBooks';
@@ -7,7 +7,8 @@ import StudentRequests from './StudentRequests';
 import StudentFines from './StudentFines';
 import Community from './Community';
 import StudentProfile from './StudentProfile';
-import { Box, Container, Grid, Card, CardContent, Typography, Chip, Divider, List, ListItem, ListItemText } from '@mui/material';
+import { Box, Container, Grid, Card, CardActionArea, CardContent, Typography, Chip, Divider, List, ListItem, ListItemText, ListItemButton, ListItemIcon } from '@mui/material';
+import { Book as BookIcon, LibraryBooks as LibraryBooksIcon, RequestQuote as RequestQuoteIcon, People as PeopleIcon } from '@mui/icons-material';
 import { useStudentAuth } from '../StudentAuthContext';
 
 function StudentDashboardHome() {
@@ -54,7 +55,7 @@ function StudentDashboardHome() {
       </Typography>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={4}>
           <Card elevation={3}>
             <CardContent>
               <Typography variant="h6" gutterBottom>Quick Stats</Typography>
@@ -75,14 +76,14 @@ function StudentDashboardHome() {
                 <Grid item xs={12}>
                   <Box display="flex" alignItems="center" justifyContent="space-between">
                     <Typography color="text.secondary">Outstanding Fines</Typography>
-                    <Chip label={`$${outstandingFine.toFixed(2)}`} color={outstandingFine > 0 ? 'error' : 'success'} variant="outlined" />
+                    <Chip label={`${outstandingFine.toFixed(2)}`} color={outstandingFine > 0 ? 'error' : 'success'} variant="outlined" />
                   </Box>
                 </Grid>
               </Grid>
             </CardContent>
           </Card>
         </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={4}>
           <Card elevation={3}>
             <CardContent>
               <Typography variant="h6" gutterBottom>Recent Activity</Typography>
@@ -102,6 +103,44 @@ function StudentDashboardHome() {
               )}
             </CardContent>
           </Card>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <Typography variant="h6" gutterBottom>Quick Actions</Typography>
+          <Divider sx={{ mb: 2 }} />
+          <Grid container spacing={2}>
+            <Grid item xs={6}>
+              <Card elevation={3}>
+                <CardActionArea component={RouterLink} to="/student-dashboard/catalogue" sx={{ p: 2, textAlign: 'center' }}>
+                  <BookIcon fontSize="large" color="primary" />
+                  <Typography variant="body2" sx={{ mt: 1 }}>Browse Catalogue</Typography>
+                </CardActionArea>
+              </Card>
+            </Grid>
+            <Grid item xs={6}>
+              <Card elevation={3}>
+                <CardActionArea component={RouterLink} to="/student-dashboard/my-books" sx={{ p: 2, textAlign: 'center' }}>
+                  <LibraryBooksIcon fontSize="large" color="primary" />
+                  <Typography variant="body2" sx={{ mt: 1 }}>View My Books</Typography>
+                </CardActionArea>
+              </Card>
+            </Grid>
+            <Grid item xs={6}>
+              <Card elevation={3}>
+                <CardActionArea component={RouterLink} to="/student-dashboard/fines" sx={{ p: 2, textAlign: 'center' }}>
+                  <RequestQuoteIcon fontSize="large" color="primary" />
+                  <Typography variant="body2" sx={{ mt: 1 }}>Check Fines</Typography>
+                </CardActionArea>
+              </Card>
+            </Grid>
+            <Grid item xs={6}>
+              <Card elevation={3}>
+                <CardActionArea component={RouterLink} to="/student-dashboard/community" sx={{ p: 2, textAlign: 'center' }}>
+                  <PeopleIcon fontSize="large" color="primary" />
+                  <Typography variant="body2" sx={{ mt: 1 }}>Community</Typography>
+                </CardActionArea>
+              </Card>
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
       

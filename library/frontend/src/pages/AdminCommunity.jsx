@@ -1,13 +1,23 @@
 import { useState, useEffect } from 'react';
+import { Container, Box, Grid, Card, CardHeader, CardContent, CardActions, Typography, TextField, Avatar, IconButton, Rating, Chip } from '@mui/material';
+import { Delete as DeleteIcon, ThumbUp as ThumbUpIcon } from '@mui/icons-material';
 
 export default function AdminCommunity() {
   const [posts, setPosts] = useState([]);
   const [filter, setFilter] = useState('');
 
   useEffect(() => {
-  const institution = JSON.parse(localStorage.getItem('digilib_institution')) || {};
+    const institution = JSON.parse(localStorage.getItem('digilib_institution')) || {};
     setPosts(institution.communityPosts || []);
   }, []);
+
+  const handleDelete = (postId) => {
+    const updatedPosts = posts.filter(p => p.postId !== postId);
+    setPosts(updatedPosts);
+    const institution = JSON.parse(localStorage.getItem('digilib_institution')) || {};
+    const updatedInstitution = { ...institution, communityPosts: updatedPosts };
+    localStorage.setItem('digilib_institution', JSON.stringify(updatedInstitution));
+  };
 
   const filteredPosts = posts.filter(post =>
     post.bookTitle.toLowerCase().includes(filter.toLowerCase()) ||
@@ -15,79 +25,84 @@ export default function AdminCommunity() {
     post.reviewText.toLowerCase().includes(filter.toLowerCase())
   );
 
+  const totalLikes = posts.reduce((sum, post) => sum + post.likes.length, 0);
+  const averageRating = posts.reduce((sum, post) => sum + post.rating, 0) / posts.length || 0;
+
   return (
-    <div className="max-w-6xl mx-auto p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-primary-blue">Community Reviews</h1>
-        <input
-          type="text"
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h4" fontWeight={700} color="primary">
+          Community Reviews
+        </Typography>
+        <TextField
+          variant="outlined"
           placeholder="Search reviews..."
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="px-4 py-2 border rounded-lg w-80"
+          sx={{ width: 350 }}
         />
-      </div>
+      </Box>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardContent sx={{ textAlign: 'center' }}>
+              <Typography variant="h4" color="primary" fontWeight={600}>{posts.length}</Typography>
+              <Typography color="text.secondary">Total Reviews</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardContent sx={{ textAlign: 'center' }}>
+              <Typography variant="h4" color="primary" fontWeight={600}>{totalLikes}</Typography>
+              <Typography color="text.secondary">Total Likes</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardContent sx={{ textAlign: 'center' }}>
+              <Typography variant="h4" color="primary" fontWeight={600}>{averageRating.toFixed(1)}</Typography>
+              <Typography color="text.secondary">Average Rating</Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      <Grid container spacing={3}>
         {filteredPosts.map(post => (
-          <div key={post.postId} className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="text-lg font-semibold">{post.bookTitle}</h3>
-                <p className="text-sm text-gray-600">
-                  Reviewed by {post.studentName} • {new Date(post.date).toLocaleDateString()}
-                </p>
-              </div>
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <span
-                    key={i}
-                    className={`text-xl ${
-                      i < post.rating ? 'text-yellow-400' : 'text-gray-300'
-                    }`}
-                  >
-                    ★
-                  </span>
-                ))}
-              </div>
-            </div>
-            <p className="text-gray-700 mb-4">{post.reviewText}</p>
-            <div className="flex items-center justify-between">
-              <span className="text-gray-500">
-                👍 {post.likes.length} likes
-              </span>
-            </div>
-          </div>
+          <Grid item key={post.postId} xs={12} md={6} lg={4}>
+            <Card>
+              <CardHeader
+                avatar={<Avatar>{post.studentName.charAt(0)}</Avatar>}
+                title={post.bookTitle}
+                subheader={`By ${post.studentName} on ${new Date(post.date).toLocaleDateString()}`}
+                action={
+                  <IconButton onClick={() => handleDelete(post.postId)}>
+                    <DeleteIcon />
+                  </IconButton>
+                }
+              />
+              <CardContent>
+                <Rating value={post.rating} readOnly />
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  {post.reviewText}
+                </Typography>
+              </CardContent>
+              <CardActions disableSpacing>
+                <Chip icon={<ThumbUpIcon />} label={`${post.likes.length} likes`} variant="outlined" />
+              </CardActions>
+            </Card>
+          </Grid>
         ))}
-      </div>
+      </Grid>
 
       {filteredPosts.length === 0 && (
-        <p className="text-center text-gray-500 mt-8">
+        <Typography align="center" color="text.secondary" sx={{ mt: 8 }}>
           {filter ? 'No reviews found matching your search.' : 'No reviews yet.'}
-        </p>
+        </Typography>
       )}
-
-      <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-        <h2 className="text-lg font-semibold text-blue-800 mb-2">Community Statistics</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-white rounded-lg p-4 text-center">
-            <p className="text-2xl font-bold text-primary-blue">{posts.length}</p>
-            <p className="text-sm text-gray-600">Total Reviews</p>
-          </div>
-          <div className="bg-white rounded-lg p-4 text-center">
-            <p className="text-2xl font-bold text-primary-blue">
-              {posts.reduce((sum, post) => sum + post.likes.length, 0)}
-            </p>
-            <p className="text-sm text-gray-600">Total Likes</p>
-          </div>
-          <div className="bg-white rounded-lg p-4 text-center">
-            <p className="text-2xl font-bold text-primary-blue">
-              {posts.reduce((sum, post) => sum + post.rating, 0) / posts.length || 0}
-            </p>
-            <p className="text-sm text-gray-600">Average Rating</p>
-          </div>
-        </div>
-      </div>
-    </div>
+    </Container>
   );
 }

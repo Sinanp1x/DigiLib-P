@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { Container, Grid, Card, CardContent, Typography, Button, Chip, Box } from '@mui/material';
+import { Container, Typography, Button, Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Chip } from '@mui/material';
 
 export default function Transactions() {
   const [transactions, setTransactions] = useState([]);
+  const [filter, setFilter] = useState('');
 
   useEffect(() => {
     const institutionData = JSON.parse(localStorage.getItem('digilib_institution')) || {};
@@ -64,44 +65,72 @@ export default function Transactions() {
 
   const isOverdue = (dueDate) => new Date(dueDate) < new Date();
 
+  const filteredTransactions = transactions.filter(t =>
+    t.bookTitle.toLowerCase().includes(filter.toLowerCase()) ||
+    t.studentName.toLowerCase().includes(filter.toLowerCase()) ||
+    t.studentId.toLowerCase().includes(filter.toLowerCase())
+  );
+
   return (
     <Container maxWidth="lg" sx={{ mt: 6, mb: 6 }}>
-      <Typography variant="h4" color="primary" fontWeight={700} sx={{ mb: 4 }}>
-        Active Transactions
-      </Typography>
-      <Grid container spacing={3}>
-        {transactions.map((transaction) => (
-          <Grid item key={transaction.transactionId} xs={12} sm={6} md={4}>
-            <Card sx={{ borderRadius: 3, boxShadow: '0 4px 24px rgba(25, 118, 210, 0.10)' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="h6" color="primary" fontWeight={700}>
-                    {transaction.bookTitle}
-                  </Typography>
-                  {isOverdue(transaction.dueDate) && <Chip label="OVERDUE" color="error" size="small" />}
-                </Box>
-                <Typography variant="body2" color="text.secondary">Student: {transaction.studentName}</Typography>
-                <Typography variant="body2" color="text.secondary">Student ID: {transaction.studentId}</Typography>
-                <Typography variant="body2" color="text.secondary">Checked Out: {transaction.checkoutDate}</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 600, color: isOverdue(transaction.dueDate) ? 'error.main' : 'text.primary', mt: 0.5 }}>
-                  Due Date: {transaction.dueDate}
-                </Typography>
-                <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-                  <Button variant="contained" onClick={() => handleExtendDueDate(transaction.transactionId)}>
-                    Extend Due Date
-                  </Button>
-                  <Button variant="outlined" color="success" onClick={() => handleCheckIn(transaction)}>
-                    Check In
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-      {transactions.length === 0 && (
-        <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mt: 4 }}>
-          No active transactions
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h4" color="primary" fontWeight={700}>
+          Active Transactions
+        </Typography>
+        <TextField
+          variant="outlined"
+          placeholder="Search by book, student name, or ID..."
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          sx={{ width: 400 }}
+        />
+      </Box>
+      <Paper sx={{ borderRadius: 2 }}>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Book Title</TableCell>
+                <TableCell>Student Name</TableCell>
+                <TableCell>Student ID</TableCell>
+                <TableCell>Checkout Date</TableCell>
+                <TableCell>Due Date</TableCell>
+                <TableCell align="right">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filteredTransactions.map((transaction) => (
+                <TableRow key={transaction.transactionId} hover>
+                  <TableCell>{transaction.bookTitle}</TableCell>
+                  <TableCell>{transaction.studentName}</TableCell>
+                  <TableCell>{transaction.studentId}</TableCell>
+                  <TableCell>{transaction.checkoutDate}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={transaction.dueDate}
+                      color={isOverdue(transaction.dueDate) ? 'error' : 'default'}
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell align="right">
+                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                      <Button size="small" variant="outlined" onClick={() => handleExtendDueDate(transaction.transactionId)}>
+                        Extend
+                      </Button>
+                      <Button size="small" variant="contained" color="success" onClick={() => handleCheckIn(transaction)}>
+                        Check In
+                      </Button>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
+      {filteredTransactions.length === 0 && (
+        <Typography variant="body1" color="text.secondary" textAlign="center" sx={{ mt: 6 }}>
+          {filter ? 'No transactions found matching your search.' : 'No active transactions.'}
         </Typography>
       )}
     </Container>
