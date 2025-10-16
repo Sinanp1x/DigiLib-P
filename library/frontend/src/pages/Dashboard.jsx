@@ -18,7 +18,7 @@ export default function Dashboard() {
   const cards = [
     { title: 'Manage Students', path: '/admin/dashboard/students', icon: <PeopleIcon color="primary" sx={{ fontSize: 40 }} /> },
     { title: 'Manage Catalogue', path: '/admin/dashboard/catalogue', icon: <MenuBookIcon color="primary" sx={{ fontSize: 40 }} /> },
-  { title: 'Check Out Book', path: '/admin/dashboard/checkout', icon: <ShoppingCartCheckoutIcon color="primary" sx={{ fontSize: 40 }} /> },
+    { title: 'Check Out Book', path: '/admin/dashboard/checkout', icon: <ShoppingCartCheckoutIcon color="primary" sx={{ fontSize: 40 }} /> },
     { title: 'Active Transactions', path: '/admin/dashboard/transactions', icon: <AutorenewIcon color="primary" sx={{ fontSize: 40 }} /> },
     { title: 'Transaction History', path: '/admin/dashboard/history', icon: <HistoryIcon color="primary" sx={{ fontSize: 40 }} /> },
     ...(portalEnabled ? [

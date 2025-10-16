@@ -308,45 +308,44 @@ export default function Catalogue() {
         <Typography variant="h4" component="h2" color="primary" sx={{ mb: 4, fontWeight: 600, textAlign: 'center', letterSpacing: '0.02em' }}>
           Current Books
         </Typography>
-        <Grid container spacing={4}>
+        <Grid container spacing={2}>
           {books.map((book) => (
-            <Grid item key={book.id} xs={12} sm={6} md={4} lg={3}>
-              <Card sx={{ display: 'flex', flexDirection: 'row', borderRadius: 3, boxShadow: '0 4px 24px rgba(25,118,210,0.10)', overflow: 'hidden' }}>
+            // xs=6 ensures at least two cards per row on the smallest screens
+            <Grid item key={book.id} xs={6} sm={6} md={4} lg={3}>
+              <Card sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', borderRadius: 2, boxShadow: '0 4px 16px rgba(25,118,210,0.08)', overflow: 'hidden', p: 1 }}>
                 {book.imagePath && (
                   <CardMedia
                     component="img"
                     image={`${BACKEND_URL}${book.imagePath}`}
                     alt={book.title}
-                    sx={{ width: 180, objectFit: 'cover', bgcolor: '#f4f6f8' }}
+                    sx={{ width: '100%', height: 140, objectFit: 'cover', bgcolor: '#f4f6f8', borderRadius: 1 }}
                   />
                 )}
-                <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                  <CardContent sx={{ flex: '1 0 auto' }}>
-                    <Typography variant="h6" color="primary" sx={{ fontWeight: 700 }}>
-                      {book.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary"><strong>Author:</strong> {book.author}</Typography>
-                    <Typography variant="body2" color="text.secondary"><strong>Genre:</strong> {book.genre}</Typography>
-                    <Typography variant="body2" color="text.secondary"><strong>Copies:</strong> {book.copies}</Typography>
-                    <Typography variant="caption" color="text.disabled"><strong>ID:</strong> {book.id}</Typography>
-                  </CardContent>
-                  <Box sx={{ display: 'flex', gap: 1, p: 2, pt: 0, alignItems: 'center' }}>
-                    {book.barcodePath && (
-                      <Button
-                        variant="outlined"
-                        color="primary"
-                        href={`${BACKEND_URL}${book.barcodePath}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        startIcon={<VisibilityIcon />}
-                        sx={{ borderRadius: 2, fontWeight: 600 }}
-                      >
-                        View Barcode
-                      </Button>
-                    )}
-                    <Button variant="contained" onClick={() => openEdit(book)}>Edit</Button>
-                    <Button variant="outlined" color="error" onClick={() => deleteBook(book.id)}>Delete</Button>
-                  </Box>
+                <CardContent sx={{ width: '100%', py: 1 }}>
+                  <Typography variant="subtitle1" color="primary" sx={{ fontWeight: 700, fontSize: '0.95rem', lineHeight: 1.1 }}>
+                    {book.title}
+                  </Typography>
+                  <Typography variant="caption" display="block" color="text.secondary"><strong>Author:</strong> {book.author}</Typography>
+                  <Typography variant="caption" display="block" color="text.secondary"><strong>Genre:</strong> {book.genre}</Typography>
+                  <Typography variant="caption" display="block" color="text.secondary"><strong>Copies:</strong> {book.copies}</Typography>
+                  <Typography variant="caption" color="text.disabled" display="block"><strong>ID:</strong> {book.id}</Typography>
+                </CardContent>
+                <Box sx={{ display: 'flex', gap: 1, p: 1, pt: 0, width: '100%', justifyContent: 'center' }}>
+                  {book.barcodePath && (
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      href={`${BACKEND_URL}${book.barcodePath}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      startIcon={<VisibilityIcon />}
+                      sx={{ borderRadius: 2, fontWeight: 600, px: 1 }}
+                    >
+                      View
+                    </Button>
+                  )}
+                  <Button variant="contained" onClick={() => openEdit(book)} sx={{ px: 1 }}>Edit</Button>
+                  <Button variant="outlined" color="error" onClick={() => deleteBook(book.id)} sx={{ px: 1 }}>Delete</Button>
                 </Box>
               </Card>
             </Grid>

@@ -18,7 +18,7 @@ export default function StudentNavbar() {
   return (
     <AppBar position="sticky" color="primary" sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
       <Toolbar>
-        <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 700 }}>Student Portal</Typography>
+        <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 700, color: '#3C467B'}}>Student Portal</Typography>
         <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1, alignItems: 'center' }}>
           <Button color="inherit" component={RouterLink} to="/student-dashboard" sx={{ fontWeight: isActive('/student-dashboard') ? 800 : 700 }}>
             Dashboard

@@ -1,0 +1,313 @@
+{
+  "institutionName": "madin",
+  "adminName": "Muhammed Sinan P",
+  "adminEmail": "psinan32@gmail.com",
+  "password": "$2b$10$hTXfbTnyym1nNjqfOACBDuC0ktoCcROy/sFZwJ1fAC.I91rIapCja",
+  "students": [
+    {
+      "name": "Muhammed Sinan P",
+      "grade": 12,
+      "section": "A",
+      "uniqueStudentId": "STU-MUH-4208",
+      "password": "-3531d6d1"
+    },
+    {
+      "name": "Sayyid abdUrahman shazin ",
+      "grade": 12,
+      "section": "A",
+      "uniqueStudentId": "STU-SAY-4865",
+      "password": "35d94e"
+    },
+    {
+      "name": "Muhammed aslam o",
+      "grade": 10,
+      "section": "A",
+      "uniqueStudentId": "STU-MUH-9868",
+      "password": "-3531d6d1"
+    }
+  ],
+  "books": [
+    {
+      "id": "BK-POE-GEO-5978",
+      "uniqueBookId": "BK-POE-GEO-5978",
+      "title": "A Song of Ice and Fire",
+      "genre": "Poem",
+      "author": "George R.R. Martin",
+      "totalCopies": 1,
+      "copies": 1,
+      "copiesAvailable": 1,
+      "series": "",
+      "volume": "",
+      "imagePath": "/public/book_covers/processed_BK-POE-GEO-5978.jpeg",
+      "barcodePath": "/public/book_barcodes/BK-POE-GEO-5978.png"
+    },
+    {
+      "id": "BK-MEM-RON-5647",
+      "uniqueBookId": "BK-MEM-RON-5647",
+      "title": "Alexander Hamilton",
+      "genre": "Memoir",
+      "author": "Ron Chernow",
+      "totalCopies": 1,
+      "copies": 1,
+      "copiesAvailable": 1,
+      "series": "",
+      "volume": "",
+      "imagePath": "/public/book_covers/processed_1758877145791-50924561.jpeg",
+      "barcodePath": "/public/book_barcodes/BK-MEM-RON-5647.png"
+    },
+    {
+      "id": "BK-BIO-TAR-7576",
+      "uniqueBookId": "BK-BIO-TAR-7576",
+      "title": "Educated",
+      "genre": "Biography",
+      "author": "Tara Westover",
+      "totalCopies": 1,
+      "copies": 1,
+      "copiesAvailable": 1,
+      "series": "",
+      "volume": "",
+      "imagePath": "/public/book_covers/processed_1758877202516-527760312.jpeg",
+      "barcodePath": "/public/book_barcodes/BK-BIO-TAR-7576.png"
+    },
+    {
+      "id": "BK-FAN-J.K-5403",
+      "uniqueBookId": "BK-FAN-J.K-5403",
+      "title": "Harry Potter 1",
+      "genre": "Fantasy",
+      "author": "J.K. Rowling",
+      "totalCopies": 1,
+      "copies": 1,
+      "copiesAvailable": 1,
+      "series": "Harry Potter",
+      "volume": "1",
+      "imagePath": "/public/book_covers/processed_1758877256813-577215207.jpeg",
+      "barcodePath": "/public/book_barcodes/BK-FAN-J.K-5403.png"
+    },
+    {
+      "id": "BK-BIO-MAY-2668",
+      "uniqueBookId": "BK-BIO-MAY-2668",
+      "title": "I Know Why the Caged Bird Sings",
+      "genre": "Biography",
+      "author": "Maya Angelou",
+      "totalCopies": 1,
+      "copies": 1,
+      "copiesAvailable": 1,
+      "series": "",
+      "volume": "",
+      "imagePath": "/public/book_covers/processed_1758877303403-865609859.jpeg",
+      "barcodePath": "/public/book_barcodes/BK-BIO-MAY-2668.png"
+    },
+    {
+      "id": "BK-POE-WAL-7310",
+      "uniqueBookId": "BK-POE-WAL-7310",
+      "title": "Leaves of Grass",
+      "genre": "Poem",
+      "author": "Walt Whitman",
+      "totalCopies": 1,
+      "copies": 1,
+      "copiesAvailable": 1,
+      "series": "",
+      "volume": "",
+      "imagePath": "/public/book_covers/processed_1758877366945-981228913.jpeg",
+      "barcodePath": "/public/book_barcodes/BK-POE-WAL-7310.png"
+    },
+    {
+      "id": "BK-POE-RUP-3968",
+      "uniqueBookId": "BK-POE-RUP-3968",
+      "title": "Milk and Honey",
+      "genre": "Poem",
+      "author": "Rupi Kaur",
+      "totalCopies": 1,
+      "copies": 1,
+      "copiesAvailable": 1,
+      "series": "",
+      "volume": "",
+      "imagePath": "/public/book_covers/processed_1758877422239-984813196.jpeg",
+      "barcodePath": "/public/book_barcodes/BK-POE-RUP-3968.png"
+    },
+    {
+      "id": "BK-FAN-GAB-3208",
+      "uniqueBookId": "BK-FAN-GAB-3208",
+      "title": "One Hundred Years of Solitude",
+      "genre": "Fantasy",
+      "author": "Gabriel García Márquez",
+      "totalCopies": 1,
+      "copies": 1,
+      "copiesAvailable": 1,
+      "series": "",
+      "volume": "",
+      "imagePath": "/public/book_covers/processed_1758877483267-988835213.jpeg",
+      "barcodePath": "/public/book_barcodes/BK-FAN-GAB-3208.png"
+    },
+    {
+      "id": "BK-NOV-JAN-9764",
+      "uniqueBookId": "BK-NOV-JAN-9764",
+      "title": "Pride and Prejudice",
+      "genre": "Noval",
+      "author": "Jane Austen",
+      "totalCopies": 1,
+      "copies": 1,
+      "copiesAvailable": 1,
+      "series": "",
+      "volume": "",
+      "imagePath": "/public/book_covers/processed_BK-NOV-JAN-9764.jpeg",
+      "barcodePath": "/public/book_barcodes/BK-NOV-JAN-9764.png"
+    },
+    {
+      "id": "BK-BIO-BEN-6400",
+      "uniqueBookId": "BK-BIO-BEN-6400",
+      "title": "The Autobiography of Benjamin Franklin",
+      "genre": "Biography",
+      "author": "Benjamin Franklin",
+      "totalCopies": 1,
+      "copies": 1,
+      "copiesAvailable": 1,
+      "series": "",
+      "volume": "",
+      "imagePath": "/public/book_covers/processed_1758877567339-704205359.jpeg",
+      "barcodePath": "/public/book_barcodes/BK-BIO-BEN-6400.png"
+    },
+    {
+      "id": "BK-POE-EMI-7074",
+      "uniqueBookId": "BK-POE-EMI-7074",
+      "title": "The Complete Poems",
+      "genre": "Poem",
+      "author": "Emily Dickinson",
+      "totalCopies": 1,
+      "copies": 1,
+      "copiesAvailable": 1,
+      "series": "",
+      "volume": "",
+      "imagePath": "/public/book_covers/processed_1758877809263-306547287.jpeg",
+      "barcodePath": "/public/book_barcodes/BK-POE-EMI-7074.png"
+    },
+    {
+      "id": "BK-BIO-ANN-1590",
+      "uniqueBookId": "BK-BIO-ANN-1590",
+      "title": "The Diary of a Young Girl",
+      "genre": "Biography",
+      "author": "Anne Frank",
+      "totalCopies": 1,
+      "copies": 1,
+      "copiesAvailable": 1,
+      "series": "",
+      "volume": "",
+      "imagePath": "/public/book_covers/processed_1758877956181-199253414.jpeg",
+      "barcodePath": "/public/book_barcodes/BK-BIO-ANN-1590.png"
+    },
+    {
+      "id": "BK-BIO-A.P-3701",
+      "uniqueBookId": "BK-BIO-A.P-3701",
+      "title": "Wings of Fire",
+      "genre": "Biography",
+      "author": "A.P.J. Abdul Kalam",
+      "totalCopies": 1,
+      "copies": 1,
+      "copiesAvailable": 1,
+      "series": "",
+      "volume": "",
+      "imagePath": "/public/book_covers/processed_BK-BIO-A.P-3701.jpeg",
+      "barcodePath": "/public/book_barcodes/BK-BIO-A.P-3701.png"
+    },
+    {
+      "id": "BK-FAN-J.R-2655",
+      "uniqueBookId": "BK-FAN-J.R-2655",
+      "title": "The Lord of the Rings",
+      "genre": "Fantasy",
+      "author": "J.R.R",
+      "totalCopies": 1,
+      "copies": 1,
+      "copiesAvailable": 1,
+      "series": "",
+      "volume": "",
+      "imagePath": "/public/book_covers/processed_1758878066269-882424070.jpeg",
+      "barcodePath": "/public/book_barcodes/BK-FAN-J.R-2655.png"
+    },
+    {
+      "id": "BK-NOV-HAR-7952",
+      "uniqueBookId": "BK-NOV-HAR-7952",
+      "title": "To kill a mocking bird",
+      "genre": "Noval",
+      "author": "Harper lee",
+      "totalCopies": 1,
+      "copies": 1,
+      "copiesAvailable": 1,
+      "series": "",
+      "volume": "",
+      "imagePath": "/public/book_covers/processed_1758878119054-296745968.jpeg",
+      "barcodePath": "/public/book_barcodes/BK-NOV-HAR-7952.png"
+    },
+    {
+      "id": "BK-FAN-ROB-4523",
+      "uniqueBookId": "BK-FAN-ROB-4523",
+      "title": "The Wheel of Time",
+      "genre": "Fantasy",
+      "author": "Robert Jordan",
+      "totalCopies": 1,
+      "copies": 1,
+      "copiesAvailable": 1,
+      "series": "",
+      "volume": "",
+      "imagePath": "/public/book_covers/processed_1758878166237-857164317.jpeg",
+      "barcodePath": "/public/book_barcodes/BK-FAN-ROB-4523.png"
+    }
+  ],
+  "portalEnabled": true,
+  "bookingRequests": [
+    {
+      "requestId": "REQ-1758647505937",
+      "studentId": "STU-MUH-4208",
+      "studentName": "Muhammed Sinan P",
+      "bookId": "BK-THI-SIN-2768",
+      "bookTitle": "hind",
+      "requestDate": "2025-09-23T17:11:45.937Z",
+      "status": "approved"
+    }
+  ],
+  "fines": [],
+  "transactions": [],
+  "history": [
+    {
+      "transactionId": "TXN-1758643747813",
+      "bookId": "BK-NOV-SIN-5698",
+      "bookTitle": "hind",
+      "studentId": "STU-SAY-4865",
+      "studentName": "Sayyid abdUrahman shazin ",
+      "checkoutDate": "2025-09-23",
+      "dueDate": "2025-11-06",
+      "status": "returned",
+      "checkinDate": "2025-09-23"
+    },
+    {
+      "transactionId": "TXN-1758647523485",
+      "bookId": "BK-THI-SIN-2768",
+      "bookTitle": "hind",
+      "studentId": "STU-MUH-4208",
+      "studentName": "Muhammed Sinan P",
+      "checkoutDate": "2025-09-23",
+      "dueDate": "2025-10-07",
+      "status": "returned",
+      "checkinDate": "2025-09-26"
+    }
+  ],
+  "extensionRequests": [
+    {
+      "requestId": "EXT-1758647800203",
+      "transactionId": "TXN-1758647523485",
+      "studentId": "STU-MUH-4208",
+      "bookId": "BK-THI-SIN-2768",
+      "requestedDays": 7,
+      "status": "pending",
+      "createdAt": "2025-09-23T17:16:40.203Z"
+    },
+    {
+      "requestId": "EXT-1758647819087",
+      "transactionId": "TXN-1758647523485",
+      "studentId": "STU-MUH-4208",
+      "bookId": "BK-THI-SIN-2768",
+      "requestedDays": 7,
+      "status": "pending",
+      "createdAt": "2025-09-23T17:16:59.087Z"
+    }
+  ]
+}
