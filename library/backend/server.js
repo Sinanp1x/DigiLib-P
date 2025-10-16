@@ -24,6 +24,8 @@ try {
   };
 }
 const sharp = require('sharp');
+const firebaseService = require('../../../services/firebaseService');
+const admin = require('firebase-admin');
 
 const app = express();
 app.use(cors());
@@ -92,6 +94,73 @@ app.post('/api/generate-barcode', async (req, res) => {
   } catch (error) {
     console.error('Error generating barcode:', error);
     res.status(500).json({ error: 'Failed to generate barcode' });
+  }
+});
+
+// Signup endpoint for institutions
+app.post('/api/auth/signup', async (req, res) => {
+  try {
+    const { institutionName, institutionType, adminName, adminEmail, password, departmentName } = req.body;
+
+    if (!institutionName || !adminName || !adminEmail || !password) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    // Create institution data
+    const institution = {
+      institutionName,
+      institutionType,
+      adminName,
+      adminEmail,
+      password, // Note: In production, hash this password
+      ...(institutionType !== 'school' && departmentName ? { departmentName } : {})
+    };
+
+    // Store locally in institution.json
+    await fs.mkdir(DATA_DIR, { recursive: true });
+    await fs.writeFile(INSTITUTION_FILE, JSON.stringify(institution, null, 2), 'utf8');
+
+    // Create user in Firebase
+    const firebaseUid = await firebaseService.createUser({
+      name: adminName,
+      email: adminEmail,
+      password,
+      phone: '' // No phone in signup form
+    });
+
+    // Prepare departments data for colleges/universities
+    let departments = null;
+    if (institutionType !== 'school' && departmentName) {
+      departments = [{
+        name: departmentName,
+        // Add other department fields as needed
+      }];
+    }
+
+    // Push institution data to Firebase and get license key
+    const licenseKey = await firebaseService.pushInstitutionData({
+      firebaseUid,
+      institution: {
+        institutionName,
+        institutionType,
+        adminName,
+        adminEmail
+      },
+      departments
+    });
+
+    // Send license key via email
+    await firebaseService.sendLicenseKeyEmail(adminEmail, licenseKey);
+
+    res.status(201).json({
+      message: 'Institution registered successfully. Please check your email for the license key.',
+      firebaseUid,
+      licenseKey // In production, don't send this in response
+    });
+
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({ message: 'Registration failed', error: error.message });
   }
 });
 
@@ -195,6 +264,58 @@ app.get('/api/profile/:id', async (req, res) => {
     res.json(JSON.parse(data));
   } catch (err) {
     res.status(404).json({ error: 'Profile not found' });
+  }
+});
+
+// License activation endpoint
+app.post('/api/profile/activate-license', async (req, res) => {
+  try {
+    const { id, licenseKey } = req.body;
+    
+    if (!id || !licenseKey) {
+      return res.status(400).json({ error: 'ID and license key are required' });
+    }
+
+    // Get institution data
+    let institutionData;
+    try {
+      const content = await fs.readFile(INSTITUTION_FILE, 'utf8');
+      institutionData = JSON.parse(content);
+    } catch (err) {
+      return res.status(400).json({ error: 'Institution data not found' });
+    }
+
+    // Verify license key with Firebase
+    const db = admin.database();
+    const registryKey = await db.ref(`digi-lib/license-registry/${institutionData.institutionName}`).once('value');
+    
+    if (!registryKey.exists() || registryKey.val() !== licenseKey) {
+      return res.status(400).json({ error: 'Invalid license key' });
+    }
+
+    // Mark license as activated in local storage
+    institutionData.licenseActivated = true;
+    institutionData.licenseKey = licenseKey;
+    await fs.writeFile(INSTITUTION_FILE, JSON.stringify(institutionData, null, 2), 'utf8');
+
+    // Update profile with license status
+    const profilePath = path.join(__dirname, 'public', 'profiles', `${id}.json`);
+    let profileData = { id, licenseActivated: true };
+    
+    try {
+      const existingProfile = await fs.readFile(profilePath, 'utf8');
+      profileData = { ...JSON.parse(existingProfile), licenseActivated: true };
+    } catch (err) {
+      // Profile doesn't exist, create new one
+    }
+    
+    await fs.writeFile(profilePath, JSON.stringify(profileData, null, 2));
+
+    res.json({ message: 'License activated successfully', licenseActivated: true });
+    
+  } catch (error) {
+    console.error('License activation error:', error);
+    res.status(500).json({ error: 'Failed to activate license' });
   }
 });
 

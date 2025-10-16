@@ -12,11 +12,13 @@ export default function Profile() {
   const { admin } = useAuth();
   const params = useParams();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState({ id: '', name: '', role: '', avatar: null, avatarPreview: null });
+  const [profile, setProfile] = useState({ id: '', name: '', role: '', avatar: null, avatarPreview: null, licenseActivated: false });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [licenseKey, setLicenseKey] = useState('');
+  const [licenseStatus, setLicenseStatus] = useState('');
 
   useEffect(() => {
     // If id provided in route use it, otherwise use admin id or 'admin'
@@ -31,6 +33,7 @@ export default function Profile() {
           name: res.data.name || inst.adminName || '',
           role: res.data.role || inst.role || '',
           avatar: res.data.avatar || null,
+          licenseActivated: res.data.licenseActivated || false,
         };
         setProfile(prev => ({ ...prev, ...merged }));
         if (res.data.avatar) setProfile(prev => ({ ...prev, avatarPreview: `${BACKEND_URL}${res.data.avatar}` }));
@@ -82,6 +85,23 @@ export default function Profile() {
     setLoading(false);
   };
 
+  const handleLicenseSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      await axios.post('/api/profile/activate-license', { id: profile.id, licenseKey }, { baseURL: BACKEND_URL });
+      setLicenseStatus('License activated!');
+      setLicenseKey('');
+      // Update profile state
+      setProfile(prev => ({ ...prev, licenseActivated: true }));
+      setTimeout(() => setLicenseStatus(''), 3000);
+    } catch (err) {
+      setError('Invalid license key');
+    }
+    setLoading(false);
+  };
+
   return (
     <Container maxWidth="md" sx={{ py: 6 }}>
       <Paper elevation={3} sx={{ p: 4, borderRadius: 4 }}>
@@ -121,6 +141,12 @@ export default function Profile() {
                     <Typography sx={{ mb: 1 }}>{profile.role}</Typography>
                   )}
                 </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">License Status</Typography>
+                  <Typography sx={{ mb: 1, color: profile.licenseActivated ? 'success.main' : 'warning.main' }}>
+                    {profile.licenseActivated ? 'Activated' : 'Not Activated'}
+                  </Typography>
+                </Box>
                 <Box sx={{ display: 'flex', gap: 2, pt: 2 }}>
                   {isEditing ? (
                     <>
@@ -141,6 +167,22 @@ export default function Profile() {
             </Grid>
           </Grid>
         </Box>
+        {!profile.licenseActivated && (
+          <Box component="form" onSubmit={handleLicenseSubmit} sx={{ mt: 4 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>Activate License</Typography>
+            <TextField
+              label="License Key"
+              value={licenseKey}
+              onChange={e => setLicenseKey(e.target.value)}
+              fullWidth
+              required
+            />
+            <Button type="submit" variant="contained" sx={{ mt: 2 }} disabled={loading}>
+              Submit License Key
+            </Button>
+            {licenseStatus && <Alert severity="success" sx={{ mt: 2 }}>{licenseStatus}</Alert>}
+          </Box>
+        )}
       </Paper>
     </Container>
   );

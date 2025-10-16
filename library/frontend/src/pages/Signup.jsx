@@ -1,16 +1,23 @@
 import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import axios from 'axios';
 import bcrypt from 'bcryptjs';
 import { Container, Box, Typography, TextField, Button, Link } from '@mui/material';
 
 export default function Signup() {
+
+  const [selected, setSelected] = useState("school");
+  const [departmentName, setDepartmentName] = useState('');
+
   const [form, setForm] = useState({
     institutionName: '',
+    institutionType: '',
     adminName: '',
     adminEmail: '',
     password: '',
   });
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -23,18 +30,23 @@ export default function Signup() {
       setError('All fields are required.');
       return;
     }
-    const salt = bcrypt.genSaltSync(10);
-    const hashedPassword = bcrypt.hashSync(form.password, salt);
-    const institution = {
-      institutionName: form.institutionName,
-      adminName: form.adminName,
-      adminEmail: form.adminEmail,
-      password: hashedPassword,
-      students: [],
-      books: [],
-    };
-    localStorage.setItem('digilib_institution', JSON.stringify(institution));
-    navigate('/login');
+    try {
+      const payload = {
+        institutionName: form.institutionName,
+        institutionType: selected,
+        adminName: form.adminName,
+        adminEmail: form.adminEmail,
+        password: form.password,
+        departmentName: selected !== 'school' ? departmentName : undefined
+      };
+      await axios.post('/api/auth/signup', payload);
+      setSuccess('Registration successful! Please check your email for the license key to activate your account.');
+      setError('');
+      // Don't navigate immediately - user needs to activate license first
+    } catch (err) {
+      setError(err.response?.data?.message || 'Signup failed');
+      setSuccess('');
+    }
   };
 
   return (
@@ -67,6 +79,36 @@ export default function Signup() {
             value={form.institutionName}
             onChange={handleChange}
           />
+          <select 
+            margin="normal"
+            required
+            fullWidth
+            name="institutionType" 
+            id="institutionType"
+            autoComplete="typeofOrganization"
+            autoFocus
+            value={selected}
+            onChange={(e) => {
+              setSelected(e.target.value);
+              setDepartmentName('');
+            }}
+          >
+            <option value="school">School</option>
+            <option value="College">University/College</option>
+          </select>
+          {selected !== 'school' && (
+          <TextField
+            margin='normal'
+            required
+            fullWidth
+            id="departmentName"
+            label="Department Name"
+            name="departmentName"
+            autoComplete="department"
+            value={departmentName}
+            onChange={e => setDepartmentName(e.target.value)}
+          />
+          )}
           <TextField
             margin="normal"
             required
@@ -104,6 +146,11 @@ export default function Signup() {
           {error && (
             <Typography color="error" variant="body2" sx={{ mt: 1, mb: 2 }}>
               {error}
+            </Typography>
+          )}
+          {success && (
+            <Typography color="success" variant="body2" sx={{ mt: 1, mb: 2 }}>
+              {success}
             </Typography>
           )}
           <Button
